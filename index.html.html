@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Whats Insight – WhatsApp Chat Viewer</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<style>
+:root{--bg:#f0f2f5;--panel:#fff;--in:#fff;--out:#d9fdd3;--ink:#111b21;--mute:#667781;--acc:#00a884;--ai:#fff;--line:rgba(17,27,33,.09);--hl:#ffd84d;--nl:36%;--brand:#059669;--pad:max(14px,calc((100% - 860px)/2))}
+@media(prefers-color-scheme:dark){:root{--bg:#0b141a;--panel:#202c33;--in:#202c33;--out:#005c4b;--ink:#e9edef;--mute:#8696a0;--line:rgba(233,237,239,.1);--nl:68%;--brand:#34d399}}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{font:15px/1.5 Inter,"Segoe UI Variable Text","Segoe UI",Roboto,system-ui,sans-serif;background:var(--bg);color:var(--ink);display:flex;flex-direction:column}
+svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:none}
+header{display:flex;align-items:center;gap:6px;padding:0 14px;height:60px;background:var(--panel);border-bottom:1px solid var(--line);flex:none;z-index:6}
+header h1{flex:1;min-width:0;display:flex;align-items:center;gap:12px;font-size:16px;margin:0;font-weight:600}
+.brand{display:flex;align-items:baseline;gap:7px;flex:none;white-space:nowrap}
+.bn{font-size:18px;font-weight:700;letter-spacing:-.01em;color:var(--brand)}
+.by{font-size:12px;font-weight:500;color:var(--mute)}
+.vs{width:1px;height:20px;margin:0 10px;flex:none;background:color-mix(in srgb,var(--mute) 45%,transparent)}
+@media(max-width:700px){.by{display:none}}
+.av{width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#25d3a7,#00a884);color:#fff;display:grid;place-items:center;font-weight:700;flex:none}
+.tt{display:flex;flex-direction:column;line-height:1.25;min-width:0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.tt small{color:var(--mute);font-weight:400;font-size:12.5px}
+.bd{background:color-mix(in srgb,var(--acc) 14%,transparent);color:var(--acc);border-radius:99px;padding:2px 10px;font-size:12px;font-weight:600;flex:none}
+select,input[type=date],button{font:inherit;font-size:13.5px;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:7px 12px;cursor:pointer}
+button:hover,select:hover{border-color:var(--acc)}
+button.p{background:var(--acc);color:var(--ai);border-color:transparent;font-weight:600}
+.ib{width:38px;height:38px;padding:0;display:grid;place-items:center;background:none;border-color:transparent;color:var(--mute)}
+.ib:hover{background:var(--bg);border-color:transparent}
+:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+#bar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:8px var(--pad);background:var(--panel);border-bottom:1px solid var(--line);flex:none}
+.sb{flex:1;min-width:200px;display:flex;align-items:center;gap:8px;background:var(--bg);border-radius:10px;padding:0 12px;color:var(--mute)}
+.sb:focus-within{box-shadow:0 0 0 2px var(--acc)}
+.sb input{flex:1;min-width:0;border:0;background:none;padding:9px 0;font:inherit;color:var(--ink);outline:none}
+#cnt{font-size:12.5px;color:var(--mute)}
+#pop{position:fixed;top:64px;right:14px;width:290px;background:var(--panel);border:1px solid var(--line);border-radius:14px;box-shadow:0 16px 48px -12px rgba(0,0,0,.35);padding:14px;display:flex;flex-direction:column;gap:12px;z-index:10}
+#pop label,#pop .r{display:flex;flex-direction:column;gap:5px;font-size:12.5px;color:var(--mute)}
+#pop .r{flex-direction:row;align-items:center;justify-content:space-between}
+#pop select{width:100%}
+#chat{flex:1;overflow-y:auto;padding:0 var(--pad) 28px;font-size:var(--fs,15px)}
+.ur{font-family:var(--nq);line-height:2.1}
+.day{position:sticky;top:10px;z-index:3;text-align:center;margin:14px 0 8px;pointer-events:none}
+.day span{display:inline-block;background:color-mix(in srgb,var(--panel) 92%,transparent);backdrop-filter:blur(8px);border:1px solid var(--line);color:var(--mute);font-size:12px;font-weight:600;padding:4px 12px;border-radius:99px}
+.sys{width:fit-content;max-width:80%;text-align:center;color:var(--mute);font-size:12.5px;margin:10px auto;padding:4px 12px;border-radius:10px;background:color-mix(in srgb,var(--panel) 90%,transparent)}
+.m{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:flex-end;gap:0 10px;width:fit-content;max-width:min(560px,82%);margin:2px 0;padding:6px 10px 5px 11px;background:var(--in);border:1px solid var(--line);border-radius:16px 16px 16px 4px;box-shadow:0 1px 0 rgba(11,20,26,.04);overflow-wrap:anywhere;white-space:pre-wrap}
+.m.me{margin-left:auto;background:var(--out);border-radius:16px 16px 4px 16px}
+.m b{flex:0 0 100%;font-size:12.5px;font-weight:600;unicode-bidi:plaintext}
+.m .t{flex:1 1 auto;min-width:0;unicode-bidi:plaintext}
+.m i{flex:none;font-style:normal;font-size:11px;line-height:1.7;color:var(--mute)}
+.m a{color:var(--acc)}
+.md{flex:0 0 100%}
+.m img.md,.m video.md{max-width:100%;max-height:340px;border-radius:10px;object-fit:cover}
+mark{background:var(--hl);color:#111b21;border-radius:3px}
+.tile{display:flex;align-items:center;gap:12px;padding:8px 14px 8px 8px;background:color-mix(in srgb,var(--ink) 5%,transparent);border-radius:12px;min-width:230px;text-decoration:none;color:inherit;white-space:normal}
+.ti{width:42px;height:42px;border-radius:10px;display:grid;place-items:center;background:color-mix(in srgb,var(--acc) 16%,transparent);color:var(--acc);flex:none}
+.tx{display:flex;flex-direction:column;line-height:1.3;font-weight:500;min-width:0}
+.tx small{color:var(--mute);font-weight:400;font-size:12px}
+.vn{direction:ltr;display:flex;align-items:center;gap:10px;min-width:270px;white-space:normal}
+.pp{width:38px;height:38px;border-radius:50%;padding:0;display:grid;place-items:center;background:var(--acc);border:0;color:#fff;flex:none}
+.pp svg{width:16px;height:16px;fill:currentColor;stroke:none}
+.vn .i2,.vn.playing .i1{display:none}
+.vn.playing .i2{display:block}
+.wv{flex:1;height:30px;display:flex;align-items:center;gap:2px;cursor:pointer}
+.wv span{flex:1;min-width:2px;border-radius:2px;background:color-mix(in srgb,var(--ink) 26%,transparent)}
+.wv span.on{background:var(--acc)}
+.du{font-size:11.5px;color:var(--mute);width:34px;font-variant-numeric:tabular-nums}
+.sp{padding:2px 8px;border-radius:99px;font-size:11.5px;font-weight:600;color:var(--mute)}
+#more{display:flex;align-items:center;justify-content:center;gap:8px;margin:14px auto;padding:6px 14px;width:fit-content;border-radius:99px;background:var(--panel);border:1px solid var(--line);color:var(--mute);font-size:12.5px}
+.spin{width:14px;height:14px;border:2px solid var(--line);border-top-color:var(--acc);border-radius:50%;animation:rot .8s linear infinite}
+@keyframes rot{to{transform:rotate(360deg)}}
+@media(prefers-reduced-motion:reduce){.spin{animation:none}}
+#drop{margin:8vh auto;text-align:center;max-width:460px;padding:44px 32px;border:2px dashed var(--line);border-radius:22px;background:var(--panel)}
+#drop.over{border-color:var(--acc)}
+#drop h2{margin:0 0 10px;font-size:22px;font-weight:700}
+#drop p{color:var(--mute);margin:6px 0 20px}
+.hide{display:none!important}
+dialog{border:1px solid var(--line);border-radius:18px;background:var(--panel);color:var(--ink);padding:24px;width:min(420px,92vw);box-shadow:0 30px 80px -20px rgba(0,0,0,.5)}
+dialog::backdrop{background:rgba(10,14,22,.5)}
+dialog h2{margin:0 0 16px;font-size:20px}
+.g{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+.g label{display:flex;flex-direction:column;gap:4px;font-size:12.5px;color:var(--mute)}
+.g select,.g input{width:100%}
+.fl{font-size:12.5px;color:var(--mute);margin:12px 0 6px}
+.seg{display:flex;gap:4px;background:var(--bg);border-radius:12px;padding:3px}
+.seg label{flex:1;text-align:center;position:relative}
+.seg input{position:absolute;opacity:0}
+.seg span{display:block;padding:6px 2px;border-radius:9px;cursor:pointer;font-size:13px;line-height:1.25}
+.seg small{font-size:11px;opacity:.75}
+.seg input:checked+span{background:var(--acc);color:var(--ai);font-weight:600}
+.seg input:focus-visible+span{outline:2px solid var(--acc);outline-offset:1px}
+#pfc{width:100%;margin-top:8px;font:inherit;font-size:13.5px;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:7px 12px}
+.hint{display:block;margin-top:6px;color:var(--mute);font-size:12px}
+.chk{display:flex;align-items:center;gap:8px;font-size:14px;margin:8px 0}
+.act{display:flex;justify-content:flex-end;gap:8px;margin-top:18px}
+#printarea{display:none}
+.g input[type=text]{font:inherit;font-size:13.5px;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:7px 12px}
+@page{size:A4 portrait;margin:8mm 8mm 10mm 8mm}
+@media print{
+  :root{--print-font-size:11px}
+  html,body{height:auto!important;background:#fff!important;color:#000!important;display:block!important}
+  header,#bar,#pop,#chat,dialog{display:none!important}
+  #printarea{display:block;--b:var(--print-font-size,11px);--tw:calc(var(--b)*3);font-family:Inter,-apple-system,"Segoe UI",Roboto,sans-serif;font-size:var(--b);line-height:1.4;color:#171717;background:#fff;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .doc-h{display:block;padding-bottom:3px;margin-bottom:4px;border-bottom:.5px solid #525252;break-after:avoid;page-break-after:avoid}
+  .doc-h h1{margin:0;font-size:calc(var(--b)*1.4);line-height:1.25;font-weight:700;white-space:normal;overflow:visible;text-overflow:clip;overflow-wrap:anywhere}
+  .brand-b{display:flex;align-items:baseline;gap:4px;margin-bottom:1px;font-size:calc(var(--b)*.8);line-height:1.2}
+  .brand-b .a{font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#525252}
+  .brand-b .z{color:#737373}
+  .meta{display:flex;flex-wrap:wrap;margin-top:1px;font-size:calc(var(--b)*.85);line-height:1.35;color:#525252;white-space:normal;overflow:visible}
+  .meta span+span::before{content:"\2022";margin:0 .5em;color:#a3a3a3}
+  .pd{display:flex;align-items:center;gap:6px;margin:4px 0 1px;font-size:calc(var(--b)*.85);font-weight:700;color:#404040;break-inside:avoid;page-break-inside:avoid;break-after:avoid;page-break-after:avoid}
+  .pd::after{content:"";flex:1;border-top:.5px solid #a3a3a3}
+  .pm{display:block;position:static!important;padding:1px 0;margin:0 0 2px;border-bottom:.5px solid #e5e5e5;white-space:pre-wrap;overflow-wrap:anywhere;break-inside:auto!important;page-break-inside:auto!important;orphans:2;widows:2}
+  .pm.sh{display:flex;flex-wrap:wrap;align-items:baseline;gap:0 6px;break-inside:avoid!important;page-break-inside:avoid!important}
+  .pt{display:inline-block;flex:none;width:calc(var(--tw) - 6px);margin-right:6px;font-size:calc(var(--b)*.85);color:#737373;font-variant-numeric:tabular-nums;direction:ltr}
+  .pn{display:inline-block;flex:none;unicode-bidi:isolate;font-size:calc(var(--b)*.85);font-weight:700;color:#171717}
+  .pm.me .pn{font-style:italic}
+  .pb{unicode-bidi:plaintext;break-inside:auto!important;page-break-inside:auto!important;orphans:2;widows:2}
+  .pm.sh .pb{display:block;flex:1 1 8em;min-width:0}
+  .pm:not(.sh) .pb{display:block;margin-top:2px;padding-left:var(--tw)}
+  .pm.rt:not(.sh) .pb{padding-left:0;padding-right:var(--tw);text-align:right}
+  .pm.nt .pt{display:none}
+  .pm.nt:not(.sh) .pb{padding-left:0;padding-right:0}
+  .pm:has(.pa){min-height:18px}
+  .ur{font-family:var(--nq),Inter,serif}
+  .pm.ur .pb{font-size:1.05em;line-height:1.7}
+  .pa{position:static!important;display:inline-flex!important;align-items:center;gap:4px;padding:1px 5px!important;font-size:calc(var(--print-font-size,11px)*.8)!important;font-weight:500;color:#374151!important;background:#f3f4f6!important;border:.5px solid #d1d5db!important;border-radius:3px!important;line-height:1.2!important;vertical-align:middle;margin:0 4px;break-inside:avoid}
+  .pa svg{width:9px;height:9px;stroke-width:2}
+  .se{margin:1px 0;font-size:calc(var(--b)*.75);line-height:1.25;color:#737373;break-inside:avoid;page-break-inside:avoid}
+  .se.ur{font-size:calc(var(--b)*.9);line-height:1.7}
+}
+</style>
+</head>
+<body>
+<header>
+  <div class="brand"><span class="bn">Whats Insight</span><span class="by">by Zaka ur Rahman</span></div>
+  <span class="vs" aria-hidden="true"></span>
+  <h1 id="title"><span class="tt">No chat open<small>Open an exported chat to begin</small></span></h1>
+  <button id="printbtn" class="ib hide" title="Print" aria-label="Print"><svg viewBox="0 0 24 24"><path d="M7 9V3h10v6M7 17H5a2 2 0 01-2-2v-4a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2h-2"/><rect x="7" y="14" width="10" height="7" rx="1"/></svg></button>
+  <button id="setbtn" class="ib" title="Settings" aria-label="Settings"><svg viewBox="0 0 24 24"><path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12M20 18h0"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="18" r="2"/></svg></button>
+  <button id="open" class="p">Open chat</button>
+  <input id="file" type="file" accept=".txt,.zip" class="hide">
+  <input id="fontfile" type="file" accept=".ttf,.otf,.woff,.woff2" class="hide">
+</header>
+<div id="bar" class="hide">
+  <label class="sb"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg><input id="q" type="search" placeholder="Search messages, names or numbers" aria-label="Search"></label>
+  <select id="from" aria-label="Filter by sender"></select>
+  <input id="date" type="date" aria-label="Jump to date">
+  <span id="cnt"></span>
+</div>
+<div id="pop" class="hide">
+  <label>Language<select id="lang"><option value="auto">Auto-detect</option><option value="en">English</option><option value="ur">Urdu (Nastaleeq)</option></select></label>
+  <label>My messages (shown on the right)<select id="who"></select></label>
+  <div class="r">Text size<span><button id="smaller" aria-label="Smaller text">A&minus;</button> <button id="bigger" aria-label="Larger text">A+</button></span></div>
+  <button id="addfont">Upload Nastaleeq font file&hellip;</button>
+</div>
+<main id="chat">
+  <div id="drop">
+    <h2>Drop your exported chat here</h2>
+    <p>Use a .txt or .zip file from WhatsApp's Export chat. Everything is read in your browser and never uploaded.</p>
+    <button class="p" id="open2">Choose file</button>
+  </div>
+</main>
+<dialog id="printdlg">
+  <h2>Print chat</h2>
+  <div class="g">
+    <label>From date<input type="date" id="pfrom"></label>
+    <label>To date<input type="date" id="pto"></label>
+    <label style="grid-column:1/3">Exported by (optional)<input type="text" id="pby" placeholder="Your name"></label>
+  </div>
+  <label class="chk"><input type="checkbox" id="ptime" checked> Show times</label>
+  <label class="chk" id="pfiltwrap"><input type="checkbox" id="pfilt" checked> Only the current search results</label>
+  <div class="fl">Print Font Size</div>
+  <div class="seg" role="radiogroup" aria-label="Print font size">
+    <label><input type="radio" name="pfs" value="9"><span>Small<br><small>9px</small></span></label>
+    <label><input type="radio" name="pfs" value="11" checked><span>Medium<br><small>11px</small></span></label>
+    <label><input type="radio" name="pfs" value="13"><span>Large<br><small>13px</small></span></label>
+    <label><input type="radio" name="pfs" value="custom"><span>Custom<br><small>8&ndash;18</small></span></label>
+  </div>
+  <input type="number" id="pfc" class="hide" min="8" max="18" step="0.5" value="11" aria-label="Custom print font size in px">
+  <small id="pfh" class="hint"></small>
+  <div class="act"><button id="pcancel">Cancel</button><button id="pgo" class="p">Print</button></div>
+</dialog>
+<div id="printarea" aria-hidden="true"></div>
+<script>
+const $=s=>document.getElementById(s);
+const S={msgs:[],view:[],shown:0,me:null,media:{},q:""};
+const PAGE=400;
+// ---- parsing ----
+const HEAD=/^[\u200e\u200f]*\[?(\d{1,4}[\/.\-]\d{1,2}[\/.\-]\d{1,4}),?\s+(\d{1,2}[:.]\d{2}(?::\d{2})?(?:\s?[AaPp]\.?\s?[Mm]\.?)?)\]?\s*(?:-\s|:\s)?([\s\S]*)$/;
+function parseDate(d,t){
+  const p=d.split(/[\/.\-]/).map(Number);let y,mo,da;
+  if(p[0]>31){y=p[0];mo=p[1];da=p[2]}
+  else{y=p[2]<100?2000+p[2]:p[2];
+    if(p[0]>12){da=p[0];mo=p[1]}else if(p[1]>12){mo=p[0];da=p[1]}else{mo=p[1];da=p[0];S.ambig=(S.ambig||[]).concat([[p[0],p[1]]])}}
+  let m=t.replace(/\./g,":").match(/(\d+):(\d+)(?::(\d+))?\s?([AaPp])?/);
+  let h=+m[1];if(m[4]){const pm=/p/i.test(m[4]);h=h%12+(pm?12:0)}
+  return {y,mo,da,h,mi:+m[2]};
+}
+function parse(text){
+  S.ambig=[];const out=[];let cur=null;
+  for(let line of text.replace(/\r/g,"").split("\n")){
+    const m=line.match(HEAD);
+    if(m){
+      const d=parseDate(m[1],m[2]);let rest=m[3],sender=null;
+      const k=rest.indexOf(": ");
+      if(k>0&&k<60){sender=rest.slice(0,k);rest=rest.slice(k+2)}
+      cur={d,sender,text:rest};out.push(cur);
+    }else if(cur)cur.text+="\n"+line;
+  }
+  // If day/month was ambiguous everywhere, assume day-first unless first number never exceeds 12 and second does
+  for(const c of out){c.ts=new Date(c.d.y,c.d.mo-1,c.d.da,c.d.h,c.d.mi).getTime();
+    c.day=`${c.d.y}-${String(c.d.mo).padStart(2,"0")}-${String(c.d.da).padStart(2,"0")}`;
+    c.time=`${String(c.d.h).padStart(2,"0")}:${String(c.d.mi).padStart(2,"0")}`}
+  return out;
+}
+// ---- loading ----
+async function load(file){
+  S.media={};let text="",name=file.name.replace(/\.(txt|zip)$/i,"").replace(/^WhatsApp Chat (with|-)\s*/i,"");
+  if(/\.zip$/i.test(file.name)){
+    if(!window.JSZip){alert("Reading zip files needs an internet connection once (for the unzip library). Extract the zip and open the .txt instead.");return}
+    const z=await JSZip.loadAsync(file);let txt=null;
+    for(const n of Object.keys(z.files)){
+      if(z.files[n].dir)continue;
+      if(/\.txt$/i.test(n)&&!txt)txt=z.files[n];
+      else S.media[n.split("/").pop()]=z.files[n];
+    }
+    if(!txt){alert("No .txt chat file found in this zip.");return}
+    text=await txt.async("string");
+  }else text=await file.text();
+  S.msgs=parse(text);
+  if(!S.msgs.length){alert("No messages recognised. Is this a WhatsApp exported chat (.txt)?");return}
+  S.name=name;$("title").innerHTML=`<span class="av">${esc([...name][0]||"?")}</span><span class="tt">${esc(name)}<small>${new Set(S.msgs.map(m=>m.sender).filter(Boolean)).size} participants</small></span><span class="bd">${S.msgs.length.toLocaleString()} messages</span>`;
+  const senders=[...new Set(S.msgs.map(m=>m.sender).filter(Boolean))];
+  $("who").innerHTML=senders.map(s=>`<option>${esc(s)}</option>`).join("");
+  $("who").title="Show my messages on the right";S.me=senders[0]||null;
+  $("from").innerHTML=`<option value="">All senders</option>`+senders.map(s=>`<option>${esc(s)}</option>`).join("");
+  for(const id of ["bar","printbtn"])$(id).classList.remove("hide");
+  $("q").value="";$("from").value="";S.q="";apply(true);
+}
+// ---- rendering ----
+function isUr(t){const l=$("lang").value;return l==="ur"||(l==="auto"&&/[\u0600-\u06FF]/.test(t))}
+function nd(s){return s.replace(/[\u06F0-\u06F9]/g,c=>c.charCodeAt(0)-0x6F0).replace(/[\u0660-\u0669]/g,c=>c.charCodeAt(0)-0x660)}
+const SEP=/[\s\-().]/g;
+function numLike(q){return /^[\d\s+\-().]+$/.test(q)&&(q.match(/\d/g)||[]).length>=3}
+function esc(s){return s.replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]))}
+function hl(s){
+  let h=esc(s);
+  h=h.replace(/(https?:\/\/[^\s<]+)/g,'<a href="$1" target="_blank" rel="noopener">$1</a>');
+  if(S.q){const p=numLike(S.q)?S.q.replace(SEP,"").split("").map(c=>c==="+"?"\\+":c).join("[\\s\\-().]*"):S.q.replace(/[.*+?^${}()|[\]\\]/g,"\\$&");
+    try{h=h.replace(new RegExp("("+p+")(?![^<]*>)","gi"),"<mark>$1</mark>")}catch(e){}}
+  return h;
+}
+const KIND={img:/^(jpe?g|png|gif|webp|heic)$/,vid:/^(mp4|webm|mov|3gp)$/,aud:/^(opus|ogg|mp3|m4a|aac|wav|amr)$/};
+const MIME={opus:"audio/ogg",ogg:"audio/ogg",mp3:"audio/mpeg",m4a:"audio/mp4",aac:"audio/aac",wav:"audio/wav",mp4:"video/mp4",webm:"video/webm",mov:"video/quicktime"};
+const LBL={img:"Photo",vid:"Video",aud:"Voice message",doc:"Document"};
+const ICO={img:'<svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="3"/><circle cx="9" cy="10" r="1.6"/><path d="M4 18l5-5 4 4 3-3 4 4"/></svg>',
+vid:'<svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="M10 9.5v5l4-2.5z"/></svg>',
+aud:'<svg viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0014 0M12 18v3"/></svg>',
+doc:'<svg viewBox="0 0 24 24"><path d="M6 3h8l4 4v14H6z"/><path d="M14 3v4h4"/></svg>'};
+const tile=(k,t,sub)=>`<span class="ti">${ICO[k]}</span><span class="tx"><span>${esc(t)}</span><small>${sub}</small></span>`;
+function vn(u,fn){let h=0;for(const c of fn)h=(h*33+c.charCodeAt(0))>>>0;let bars="";
+  for(let i=0;i<36;i++){h=(h*1664525+1013904223)>>>0;bars+=`<span style="height:${25+(h>>>8)%75}%"></span>`}
+  return `<div class="vn md" data-u="${u}"><button class="pp" aria-label="Play voice message"><svg class="i1" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg><svg class="i2" viewBox="0 0 24 24"><path d="M7 5h4v14H7zM13 5h4v14h-4z"/></svg></button><div class="wv">${bars}</div><span class="du">0:00</span><button class="sp" aria-label="Playback speed">1x</button></div>`}
+async function mediaFor(text){
+  const t=text.trim();
+  const m=t.match(/<attached:\s*([^>]+)>/)||t.match(/^[\u200e]*(\S.*?\.\w{2,4})\s*\(file attached\)/);
+  const omit=/^[\u200e]*<?(media|image|video|audio|sticker|document|gif|voice message)\s+omitted>?/i.test(t);
+  if(!m&&!omit)return "";
+  const fn=m?m[1].trim():"",ext=((fn.match(/\.(\w+)$/)||[])[1]||"").toLowerCase();
+  const k=KIND.img.test(ext)?"img":KIND.vid.test(ext)?"vid":KIND.aud.test(ext)?"aud":/image|gif|sticker/i.test(t)?"img":/video/i.test(t)?"vid":/audio|voice/i.test(t)?"aud":"doc";
+  const f=fn&&S.media[fn];
+  if(f){const b=await f.async("blob"),u=URL.createObjectURL(new Blob([b],{type:MIME[ext]||b.type}));
+    if(k==="img")return `<img class="md" src="${u}" alt="">`;
+    if(k==="vid")return `<video class="md" src="${u}" controls></video>`;
+    if(k==="aud")return vn(u,fn);
+    return `<a class="tile md" href="${u}" download="${esc(fn)}">${tile(k,fn,"Download")}</a>`}
+  return `<div class="tile md">${tile(k,fn||LBL[k],"Not included in export")}</div>`;
+}
+async function row(m){
+  if(!m.sender)return `<div class="sys${isUr(m.text)?" ur":""}">${hl(m.text)}</div>`;
+  const me=m.sender===S.me,med=await mediaFor(m.text);
+  return `<div class="m${me?" me":""}${isUr(m.text+m.sender)?" ur":""}" data-day="${m.day}">${me?"":`<b dir="auto" style="color:hsl(${hue(m.sender)},60%,var(--nl))">${hl(m.sender)}</b>`}${med||`<span class="t" dir="auto">${hl(m.text)}</span>`}<i dir="ltr">${m.time}</i></div>`;
+}
+function hue(s){let h=0;for(const c of s)h=(h*31+c.charCodeAt(0))%360;return h}
+const io=new IntersectionObserver(es=>{if(es.some(e=>e.isIntersecting))loadMore()},{root:$("chat"),rootMargin:"120px"});
+function loadMore(){S.shown+=PAGE;render(1)}
+const fmt=t=>isFinite(t)?Math.floor(t/60)+":"+String(Math.floor(t%60)).padStart(2,"0"):"0:00";
+function initVn(el){
+  const a=new Audio();a.preload="metadata";a.src=el.dataset.u;el._a=a;
+  const bars=[...el.querySelectorAll(".wv span")],du=el.querySelector(".du");
+  const paint=()=>{const f=a.duration?a.currentTime/a.duration:0;bars.forEach((b,i)=>b.classList.toggle("on",i/bars.length<f));du.textContent=fmt(!a.paused||a.currentTime>0?a.currentTime:a.duration)};
+  a.onloadedmetadata=paint;a.ontimeupdate=paint;
+  a.onplay=()=>{document.querySelectorAll(".vn.playing").forEach(o=>o!==el&&o._a.pause());el.classList.add("playing")};
+  a.onpause=()=>el.classList.remove("playing");
+  a.onended=()=>{a.currentTime=0;paint()};
+}
+async function render(keepScroll){
+  io.disconnect();
+  const c=$("chat"),start=Math.max(0,S.view.length-S.shown),prevH=c.scrollHeight,prevT=c.scrollTop;
+  let html=start>0?`<div id="more" role="status"><span class="spin"></span>Loading earlier messages<small>${start.toLocaleString()} more</small></div>`:"",day="";
+  for(let i=start;i<S.view.length;i++){const m=S.view[i];
+    if(m.day!==day){if(day)html+="</section>";day=m.day;html+=`<section class="dg"><div class="day"><span>${new Date(m.ts).toLocaleDateString(undefined,{month:"long",day:"numeric",year:"numeric"})}</span></div>`}
+    html+=await row(m)}
+  if(day)html+="</section>";
+  if(!S.view.length)html=`<div class="sys">No messages match.</div>`;
+  c.innerHTML=html;c.querySelectorAll(".vn").forEach(initVn);
+  if(keepScroll===2)c.scrollTop=prevT;else if(keepScroll)c.scrollTop=c.scrollHeight-prevH+prevT;else c.scrollTop=c.scrollHeight;
+  const b=$("more");if(b){b.onclick=loadMore;setTimeout(()=>io.observe(b),250)}
+}
+function apply(toEnd){
+  const f=$("from").value;S.q=nd($("q").value.trim()).toLowerCase();
+  const q=S.q,dq=numLike(q)?q.replace(SEP,""):"";
+  S.view=S.msgs.filter(m=>{
+    if(f&&m.sender!==f)return false;
+    if(!q)return true;
+    const hay=m.hay||(m.hay=nd((m.sender||"")+" "+m.text).toLowerCase());
+    if(hay.includes(q))return true;
+    return dq&&(m.dh||(m.dh=hay.replace(SEP,""))).includes(dq);
+  });
+  S.shown=Math.min(PAGE,S.view.length);render(false);$("cnt").textContent=(q||f)?S.view.length.toLocaleString()+" results":"";
+}
+// ---- events ----
+const pick=()=>$("file").click();
+$("open").onclick=pick;$("open2").onclick=pick;
+$("file").onchange=e=>e.target.files[0]&&load(e.target.files[0]);
+let t;$("q").oninput=()=>{clearTimeout(t);t=setTimeout(apply,250)};
+$("from").onchange=apply;
+$("who").onchange=e=>{S.me=e.target.value;render(2)};
+$("date").onchange=async e=>{
+  const d=e.target.value;if(!d)return;
+  $("q").value="";$("from").value="";S.q="";S.view=S.msgs;
+  const i=S.view.findIndex(m=>m.day>=d);if(i<0)return;
+  S.shown=S.view.length-Math.max(0,i-5);await render(false);
+  const el=$("chat").querySelector(`[data-day="${d}"]`)||$("chat").querySelector(".day");
+  if(el)el.scrollIntoView({block:"start"});
+};
+// ---- font ----
+let fs=18;
+function setFont(){
+  const r=document.documentElement.style;
+  r.setProperty("--nq",'"Jameel Noori Nastaleeq","Jameel Noori Nastaleeq Kasheeda","Noto Nastaliq Urdu","Segoe UI",serif');
+  r.setProperty("--fs",fs+"px");
+  try{localStorage.setItem("cv2",JSON.stringify({l:$("lang").value,fs}))}catch(e){}
+}
+try{const s=JSON.parse(localStorage.getItem("cv2")||"null");if(s){$("lang").value=s.l;fs=s.fs}}catch(e){}
+$("lang").onchange=()=>{setFont();if(S.msgs.length)render(2)};
+$("bigger").onclick=()=>{fs=Math.min(40,fs+2);setFont()};
+$("smaller").onclick=()=>{fs=Math.max(11,fs-2);setFont()};
+$("addfont").onclick=()=>$("fontfile").click();
+$("fontfile").onchange=async e=>{
+  const f=e.target.files[0];if(!f)return;
+  try{
+    const ff=new FontFace("Jameel Noori Nastaleeq",`url(${URL.createObjectURL(f)})`);
+    await ff.load();document.fonts.add(ff);$("lang").value="ur";setFont();if(S.msgs.length)render(2);
+  }catch(err){alert("Could not load that font file.")}
+};
+setFont();
+// ---- print ----
+S.printList=null;S.pp={l:"chat",sz:11,t:true};
+const PL={img:"Image",vid:"Video",aud:"Voice note",doc:"Document"};
+function mediaKind(text){
+  const t=text.trim(),m=t.match(/<attached:\s*([^>]+)>/)||t.match(/^[\u200e]*(\S.*?\.\w{2,4})\s*\(file attached\)/);
+  const omit=/^[\u200e]*<?(media|image|video|audio|sticker|document|gif|voice message)\s+omitted>?/i.test(t);
+  if(!m&&!omit)return null;
+  const fn=m?m[1].trim():"",ext=((fn.match(/\.(\w+)$/)||[])[1]||"").toLowerCase();
+  const k=KIND.img.test(ext)?"img":KIND.vid.test(ext)?"vid":KIND.aud.test(ext)?"aud":/image|gif|sticker/i.test(t)?"img":/video/i.test(t)?"vid":/audio|voice/i.test(t)?"aud":"doc";
+  return {k,fn};
+}
+const JOIN=/^[\u200e\s~]*(.+?)\s+joined\s+(?:using|via)\s+.*link\s*$/i,ENC=/end-to-end encrypted/i;
+function buildPrint(){
+  const list=S.printList||S.msgs;if(!list.length)return;
+  const P=S.pp,el=$("printarea"),D=d=>new Date(d).toLocaleDateString(undefined,{day:"numeric",month:"short",year:"numeric"});
+  el.style.setProperty("--print-font-size",P.sz+"px");
+  const name=S.name||"Chat",range=D(list[0].ts)+" \u2013 "+D(list[list.length-1].ts);
+  const gen=new Date().toLocaleString(undefined,{dateStyle:"medium",timeStyle:"short"});
+  const parts=[""];let day="",run=null,enc=false;
+  const flush=()=>{if(!run)return;
+    const n=run.names.length,who=run.names.slice(0,6).join(", ")+(n>6?", etc.":"");
+    const when=run.a.day!==run.b.day?`between ${D(run.a.ts)} and ${D(run.b.ts)}`:run.a.time===run.b.time?`at ${run.a.time}`:`between ${run.a.time} and ${run.b.time}`;
+    parts.push(`<div class="se${run.ur?" ur":""}" dir="auto">System: ${n===1?esc(run.names[0])+" joined":n+" participants joined"} via invite link ${when} (${esc(who)})</div>`);run=null};
+  for(const m of list){
+    if(!m.sender&&ENC.test(m.text)){enc=true;continue}
+    if(m.day!==day){flush();day=m.day;parts.push(`<div class="pd">${new Date(m.ts).toLocaleDateString(undefined,{weekday:"short",day:"numeric",month:"long",year:"numeric"})}</div>`)}
+    const ur=isUr((m.sender||"")+m.text)?" ur":"";
+    if(!m.sender){
+      const j=m.text.match(JOIN);
+      if(j){const nm=j[1].replace(/^[\u200e\s~]+/,"").trim();
+        if(!run)run={names:[],a:m,ur:false};run.names.push(nm);run.b=m;run.ur=run.ur||!!ur;continue}
+      flush();parts.push(`<div class="se${ur}" dir="auto">System: ${esc(m.text.replace(/[\u200e]/g,"").trim())}</div>`);continue;
+    }
+    flush();
+    const md=mediaKind(m.text),cap=md?m.text.split("\n").slice(1).join("\n").trim():"";
+    const body=md?`<span class="pa">${ICO[md.k]} ${PL[md.k]}</span>${cap?" "+esc(cap):""}`:esc(m.text);
+    const rtl=/[\u0600-\u06FF]/.test((m.text.match(/[A-Za-z\u0600-\u06FF]/)||[""])[0]);
+    const sh=!m.text.includes("\n")&&m.text.length<=140;
+    parts.push(`<div class="pm${m.sender===S.me?" me":""}${ur}${rtl?" rt":""}${P.t?"":" nt"}${sh?" sh":""}">${P.t?`<span class="pt">${m.time}</span>`:""}<span class="pn" dir="auto">${esc(m.sender)}:</span> <span class="pb" dir="auto">${body}</span></div>`);
+  }
+  flush();
+  parts[0]=`<div class="doc-h"><div class="brand-b"><span class="a">Whats Insight</span><span class="z">&middot; by Zaka ur Rahman</span></div><h1 dir="auto">${esc(name)}</h1><div class="meta"><span>${list.length.toLocaleString()} messages</span><span>${range}</span>${enc?"<span>End-to-end encrypted</span>":""}<span>Exported ${gen}</span>${P.by?`<span>Exported by ${esc(P.by)}</span>`:""}</div></div>`;
+  el.innerHTML=parts.join("");
+  const q=t=>'"'+t.replace(/[\\"]/g,"\\$&").replace(/\n/g," ")+'"';
+  let st=$("pgstyle");if(!st){st=document.createElement("style");st.id="pgstyle";document.head.appendChild(st)}
+  const f="font:7px Inter,Segoe UI,sans-serif;color:#737373";
+  st.textContent=`@page{@top-left{content:"Whats Insight by Zaka ur Rahman";${f}}@bottom-left{content:${q(name+" \u00b7 "+range)};${f}}@bottom-right{content:"Page " counter(page) " of " counter(pages);${f}}}@page:first{@top-left{content:""}}`;
+  S.oldTitle=document.title;document.title=name+" \u2013 Whats Insight";
+}
+$("printbtn").onclick=()=>{
+  const f=S.view.length!==S.msgs.length;
+  $("pfiltwrap").classList.toggle("hide",!f);
+  if(S.msgs.length){$("pfrom").min=$("pto").min=S.msgs[0].day;$("pfrom").max=$("pto").max=S.msgs[S.msgs.length-1].day}
+  $("printdlg").showModal();
+};
+const PFD={9:"Maximum page economy, fewest pages.",11:"Balanced readability and density.",13:"High visibility, larger text.",custom:"Enter a size from 8 to 18 px."};
+const pfV=()=>document.querySelector('input[name=pfs]:checked').value;
+function pfSize(){if(pfV()==="custom"){const n=parseFloat($("pfc").value);return Math.min(18,Math.max(8,isFinite(n)?n:11))}return +pfV()}
+function pfUI(){const v=pfV();$("pfc").classList.toggle("hide",v!=="custom");$("pfh").textContent=PFD[v];try{localStorage.setItem("cvpf",JSON.stringify({v,c:$("pfc").value}))}catch(e){}}
+document.querySelectorAll('input[name=pfs]').forEach(r=>r.onchange=pfUI);
+$("pfc").oninput=pfUI;
+try{const o=JSON.parse(localStorage.getItem("cvpf")||"null");if(o){const r=document.querySelector(`input[name=pfs][value="${o.v}"]`);if(r)r.checked=true;$("pfc").value=o.c||11}}catch(e){}
+pfUI();
+S.pp.sz=pfSize();
+$("pcancel").onclick=()=>$("printdlg").close();
+$("pgo").onclick=()=>{
+  const base=(!$("pfiltwrap").classList.contains("hide")&&$("pfilt").checked)?S.view:S.msgs;
+  const a=$("pfrom").value,z=$("pto").value;
+  const list=base.filter(m=>(!a||m.day>=a)&&(!z||m.day<=z));
+  if(!list.length){alert("No messages in that range.");return}
+  S.pp={l:"chat",sz:pfSize(),t:$("ptime").checked,by:$("pby").value.trim()};
+  S.printList=list;$("printdlg").close();window.print();
+};
+window.addEventListener("beforeprint",buildPrint);
+window.addEventListener("afterprint",()=>{$("printarea").innerHTML="";S.printList=null;if(S.oldTitle)document.title=S.oldTitle});
+// ---- voice notes + settings popover ----
+$("chat").addEventListener("click",e=>{
+  const el=e.target.closest(".vn");if(!el||!el._a)return;const a=el._a;
+  if(e.target.closest(".pp")){a.paused?a.play():a.pause()}
+  else if(e.target.closest(".sp")){const s=[1,1.5,2],n=s[(s.indexOf(a.playbackRate)+1)%3];a.playbackRate=n;e.target.closest(".sp").textContent=n+"x"}
+  else if(e.target.closest(".wv")&&a.duration){const r=e.target.closest(".wv").getBoundingClientRect();a.currentTime=a.duration*Math.min(1,Math.max(0,(e.clientX-r.left)/r.width))}
+});
+$("setbtn").onclick=e=>{e.stopPropagation();$("pop").classList.toggle("hide")};
+document.addEventListener("click",e=>{if(!$("pop").contains(e.target))$("pop").classList.add("hide")});
+document.addEventListener("keydown",e=>{if(e.key==="Escape")$("pop").classList.add("hide")});
+const dz=$("chat");
+dz.ondragover=e=>{e.preventDefault();$("drop")?.classList.add("over")};
+dz.ondragleave=()=>$("drop")?.classList.remove("over");
+dz.ondrop=e=>{e.preventDefault();e.dataTransfer.files[0]&&load(e.dataTransfer.files[0])};
+</script>
+</body>
+</html>
