@@ -35,7 +35,7 @@ button.p{background:var(--acc);color:var(--ai);border-color:transparent;font-wei
 .sb input{flex:1;min-width:0;border:0;background:none;padding:9px 0;font:inherit;color:var(--ink);outline:none}
 #cnt{font-size:12.5px;color:var(--mute)}
 #pop{position:fixed;top:64px;right:14px;width:290px;background:var(--panel);border:1px solid var(--line);border-radius:14px;box-shadow:0 16px 48px -12px rgba(0,0,0,.35);padding:14px;display:flex;flex-direction:column;gap:12px;z-index:10}
-#pop label,#pop .r{display:flex;flex-direction:column;gap:5px;font-size:12.5px;color:var(--mute)}
+#pop>label,#pop .fl2,#pop .r{display:flex;flex-direction:column;gap:5px;font-size:12.5px;color:var(--mute)}
 #pop .r{flex-direction:row;align-items:center;justify-content:space-between}
 #pop select{width:100%}
 #chat{flex:1;overflow-y:auto;padding:0 var(--pad) 28px;font-size:var(--fs,15px)}
@@ -74,6 +74,46 @@ mark{background:var(--hl);color:#111b21;border-radius:3px}
 #drop.over{border-color:var(--acc)}
 #drop h2{margin:0 0 10px;font-size:22px;font-weight:700}
 #drop p{color:var(--mute);margin:6px 0 20px}
+#bar .sb{height:36px}
+.sb input{padding:0!important;height:34px!important}
+.flt{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.ftg{display:none;align-items:center;gap:6px;height:36px}
+.ftg.act{border-color:var(--acc);color:var(--acc)}
+.cb{position:relative}
+.cbt{display:flex;align-items:center;height:36px;background:var(--bg);border:1px solid var(--line);border-radius:10px}
+.cbt:focus-within,.dr:focus-within{border-color:var(--acc);box-shadow:0 0 0 2px color-mix(in srgb,var(--acc) 22%,transparent)}
+.cbt.act{border-color:var(--acc)}
+.cbt button{border:0;background:none;height:100%;padding:0 10px;border-radius:10px;display:flex;align-items:center;gap:6px;color:var(--ink)}
+#cbt{min-width:150px;max-width:220px;justify-content:space-between}
+#cbl{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#cbx{padding:0 8px;color:var(--mute)}
+.cbt svg,.dr svg,.cbs svg{width:16px;height:16px;color:var(--mute)}
+.cbp{position:absolute;top:calc(100% + 6px);left:0;width:min(330px,88vw);background:var(--panel);border:1px solid var(--line);border-radius:12px;box-shadow:0 16px 48px -12px rgba(0,0,0,.35);z-index:20;overflow:hidden}
+.cbs{display:flex;align-items:center;gap:8px;padding:0 12px;border-bottom:1px solid var(--line);color:var(--mute)}
+.cbs input{flex:1;min-width:0;border:0;background:none;padding:10px 0;font:inherit;font-size:14px;color:var(--ink);outline:none}
+#cbo,.cmb ul{list-style:none;margin:0;padding:4px;max-height:280px;overflow-y:auto}
+#cbo li,.cmb li{display:flex;align-items:center;gap:10px;padding:6px 8px;border-radius:8px;cursor:pointer}
+#cbo li.on,#cbo li:hover,.cmb li.on,.cmb li:hover{background:var(--bg)}
+#cbo li.sel .cm>span,.cmb li.sel .cm>span{font-weight:600}
+#cbo li.none,.cmb li.none{color:var(--mute);justify-content:center;cursor:default}
+.ci{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;color:#fff;font-size:11px;font-weight:700;flex:none;background:var(--acc)}
+.cm{display:flex;flex-direction:column;line-height:1.25;min-width:0}
+.cm>span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cm small{color:var(--mute);font-size:11.5px}
+.dr{display:flex;align-items:center;gap:2px;height:36px;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:0 4px 0 2px;color:var(--mute)}
+.dr input[type=date]{border:0;background:none;height:100%;padding:0 6px;font:inherit;font-size:13px;color:var(--ink);border-radius:8px;width:126px}
+.dr button{border:0;background:none;padding:0 6px;height:100%;color:var(--mute)}
+@media(max-width:700px){.ftg{display:flex}.flt{display:none;width:100%}.flt.open{display:flex}}
+#setbtn[aria-expanded=true]{background:color-mix(in srgb,var(--acc) 14%,transparent);color:var(--acc);border-color:color-mix(in srgb,var(--acc) 40%,transparent);box-shadow:0 0 0 2px color-mix(in srgb,var(--acc) 20%,transparent)}
+.fl2{display:flex;flex-direction:column;gap:5px}
+.cmb{position:relative}
+.cmb-t{display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%;height:36px;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:0 10px;color:var(--ink)}
+.cmb-t:focus-visible,.cmb-t[aria-expanded=true]{border-color:var(--acc);box-shadow:0 0 0 2px color-mix(in srgb,var(--acc) 22%,transparent)}
+.cmb-t svg{width:16px;height:16px;color:var(--mute)}
+.cmb-l{display:flex;align-items:center;gap:8px;min-width:0}
+.cmb-l>span:last-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cmb .cbp{width:100%}
+.ci.sm{width:20px;height:20px;font-size:9px}
 .hide{display:none!important}
 dialog{border:1px solid var(--line);border-radius:18px;background:var(--panel);color:var(--ink);padding:24px;width:min(420px,92vw);box-shadow:0 30px 80px -20px rgba(0,0,0,.5)}
 dialog::backdrop{background:rgba(10,14,22,.5)}
@@ -137,20 +177,35 @@ dialog h2{margin:0 0 16px;font-size:20px}
   <span class="vs" aria-hidden="true"></span>
   <h1 id="title"><span class="tt">No chat open<small>Open an exported chat to begin</small></span></h1>
   <button id="printbtn" class="ib hide" title="Print" aria-label="Print"><svg viewBox="0 0 24 24"><path d="M7 9V3h10v6M7 17H5a2 2 0 01-2-2v-4a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2h-2"/><rect x="7" y="14" width="10" height="7" rx="1"/></svg></button>
-  <button id="setbtn" class="ib" title="Settings" aria-label="Settings"><svg viewBox="0 0 24 24"><path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12M20 18h0"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="18" r="2"/></svg></button>
+  <button id="setbtn" class="ib" title="Settings" aria-label="Settings" aria-haspopup="true" aria-expanded="false" aria-controls="pop"><svg viewBox="0 0 24 24"><path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12M20 18h0"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="18" r="2"/></svg></button>
   <button id="open" class="p">Open chat</button>
   <input id="file" type="file" accept=".txt,.zip" class="hide">
   <input id="fontfile" type="file" accept=".ttf,.otf,.woff,.woff2" class="hide">
 </header>
 <div id="bar" class="hide">
   <label class="sb"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg><input id="q" type="search" placeholder="Search messages, names or numbers" aria-label="Search"></label>
-  <select id="from" aria-label="Filter by sender"></select>
-  <input id="date" type="date" aria-label="Jump to date">
+  <button id="ftg" class="ftg" aria-expanded="false" aria-controls="flt"><svg viewBox="0 0 24 24"><path d="M3 5h18l-7 8v6l-4-2v-4z"/></svg>Filters</button>
+  <div id="flt" class="flt">
+    <div class="cb" id="cb">
+      <div class="cbt" id="cbw">
+        <button type="button" id="cbt" aria-haspopup="listbox" aria-expanded="false" aria-controls="cbo"><span id="cbl">All senders</span><svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></button>
+        <button type="button" id="cbx" class="hide" aria-label="Clear sender filter"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+      </div>
+      <div id="cbp" class="cbp hide">
+        <label class="cbs"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg><input id="cbq" type="text" role="combobox" aria-expanded="true" aria-controls="cbo" aria-autocomplete="list" autocomplete="off" placeholder="Search sender or number..."></label>
+        <ul id="cbo" role="listbox" aria-label="Senders"></ul>
+      </div>
+    </div>
+    <div class="dr" role="group" aria-label="Date range">
+      <input type="date" id="dfrom" aria-label="From date"><span aria-hidden="true">&ndash;</span><input type="date" id="dto" aria-label="To date">
+      <button type="button" id="dx" class="hide" aria-label="Clear date range"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+    </div>
+  </div>
   <span id="cnt"></span>
 </div>
 <div id="pop" class="hide">
   <label>Language<select id="lang"><option value="auto">Auto-detect</option><option value="en">English</option><option value="ur">Urdu (Nastaleeq)</option></select></label>
-  <label>My messages (shown on the right)<select id="who"></select></label>
+  <div class="fl2"><span>My messages (shown on the right)</span><div id="who"></div></div>
   <div class="r">Text size<span><button id="smaller" aria-label="Smaller text">A&minus;</button> <button id="bigger" aria-label="Larger text">A+</button></span></div>
   <button id="addfont">Upload Nastaleeq font file&hellip;</button>
 </div>
@@ -232,11 +287,10 @@ async function load(file){
   if(!S.msgs.length){alert("No messages recognised. Is this a WhatsApp exported chat (.txt)?");return}
   S.name=name;$("title").innerHTML=`<span class="av">${esc([...name][0]||"?")}</span><span class="tt">${esc(name)}<small>${new Set(S.msgs.map(m=>m.sender).filter(Boolean)).size} participants</small></span><span class="bd">${S.msgs.length.toLocaleString()} messages</span>`;
   const senders=[...new Set(S.msgs.map(m=>m.sender).filter(Boolean))];
-  $("who").innerHTML=senders.map(s=>`<option>${esc(s)}</option>`).join("");
-  $("who").title="Show my messages on the right";S.me=senders[0]||null;
-  $("from").innerHTML=`<option value="">All senders</option>`+senders.map(s=>`<option>${esc(s)}</option>`).join("");
+  S.me=loadMe(senders);
+  buildCB(senders);whoCombo.refresh();
   for(const id of ["bar","printbtn"])$(id).classList.remove("hide");
-  $("q").value="";$("from").value="";S.q="";apply(true);
+  $("q").value="";$("dfrom").value=$("dto").value="";initDates();S.q="";apply(true);
 }
 // ---- rendering ----
 function isUr(t){const l=$("lang").value;return l==="ur"||(l==="auto"&&/[\u0600-\u06FF]/.test(t))}
@@ -309,32 +363,26 @@ async function render(keepScroll){
   const b=$("more");if(b){b.onclick=loadMore;setTimeout(()=>io.observe(b),250)}
 }
 function apply(toEnd){
-  const f=$("from").value;S.q=nd($("q").value.trim()).toLowerCase();
+  const f=S.from,a=$("dfrom").value,z=$("dto").value;S.q=nd($("q").value.trim()).toLowerCase();
   const q=S.q,dq=numLike(q)?q.replace(SEP,""):"";
   S.view=S.msgs.filter(m=>{
     if(f&&m.sender!==f)return false;
+    if((a&&m.day<a)||(z&&m.day>z))return false;
     if(!q)return true;
     const hay=m.hay||(m.hay=nd((m.sender||"")+" "+m.text).toLowerCase());
     if(hay.includes(q))return true;
     return dq&&(m.dh||(m.dh=hay.replace(SEP,""))).includes(dq);
   });
-  S.shown=Math.min(PAGE,S.view.length);render(false);$("cnt").textContent=(q||f)?S.view.length.toLocaleString()+" results":"";
+  S.shown=Math.min(PAGE,S.view.length);render(false);$("cnt").textContent=(q||f||a||z)?S.view.length.toLocaleString()+" results":"";$("dx").classList.toggle("hide",!(a||z));$("ftg").classList.toggle("act",!!(f||a||z));
 }
 // ---- events ----
 const pick=()=>$("file").click();
 $("open").onclick=pick;$("open2").onclick=pick;
 $("file").onchange=e=>e.target.files[0]&&load(e.target.files[0]);
 let t;$("q").oninput=()=>{clearTimeout(t);t=setTimeout(apply,250)};
-$("from").onchange=apply;
-$("who").onchange=e=>{S.me=e.target.value;render(2)};
-$("date").onchange=async e=>{
-  const d=e.target.value;if(!d)return;
-  $("q").value="";$("from").value="";S.q="";S.view=S.msgs;
-  const i=S.view.findIndex(m=>m.day>=d);if(i<0)return;
-  S.shown=S.view.length-Math.max(0,i-5);await render(false);
-  const el=$("chat").querySelector(`[data-day="${d}"]`)||$("chat").querySelector(".day");
-  if(el)el.scrollIntoView({block:"start"});
-};
+const whoCombo=Combo($("who"),{placeholder:"Search sender or number...",empty:"Select…",
+  items:()=>S.senders||[],get:()=>S.me,
+  set:v=>{S.me=v;try{localStorage.setItem("cvme:"+S.name,v)}catch(e){}render(2)}});
 // ---- font ----
 let fs=18;
 function setFont(){
@@ -408,7 +456,7 @@ function buildPrint(){
 $("printbtn").onclick=()=>{
   const f=S.view.length!==S.msgs.length;
   $("pfiltwrap").classList.toggle("hide",!f);
-  if(S.msgs.length){$("pfrom").min=$("pto").min=S.msgs[0].day;$("pfrom").max=$("pto").max=S.msgs[S.msgs.length-1].day}
+  if(S.msgs.length){$("pfrom").value=$("dfrom").value;$("pto").value=$("dto").value;$("pfrom").min=$("pto").min=S.msgs[0].day;$("pfrom").max=$("pto").max=S.msgs[S.msgs.length-1].day}
   $("printdlg").showModal();
 };
 const PFD={9:"Maximum page economy, fewest pages.",11:"Balanced readability and density.",13:"High visibility, larger text.",custom:"Enter a size from 8 to 18 px."};
@@ -438,9 +486,97 @@ $("chat").addEventListener("click",e=>{
   else if(e.target.closest(".sp")){const s=[1,1.5,2],n=s[(s.indexOf(a.playbackRate)+1)%3];a.playbackRate=n;e.target.closest(".sp").textContent=n+"x"}
   else if(e.target.closest(".wv")&&a.duration){const r=e.target.closest(".wv").getBoundingClientRect();a.currentTime=a.duration*Math.min(1,Math.max(0,(e.clientX-r.left)/r.width))}
 });
-$("setbtn").onclick=e=>{e.stopPropagation();$("pop").classList.toggle("hide")};
-document.addEventListener("click",e=>{if(!$("pop").contains(e.target))$("pop").classList.add("hide")});
-document.addEventListener("keydown",e=>{if(e.key==="Escape")$("pop").classList.add("hide")});
+function setPop(o){$("pop").classList.toggle("hide",!o);const b=$("setbtn");b.setAttribute("aria-expanded",o);if(o)b.removeAttribute("title");else b.title="Settings"}
+$("setbtn").onclick=e=>{e.stopPropagation();setPop($("pop").classList.contains("hide"))};
+document.addEventListener("click",e=>{if(!$("pop").contains(e.target)&&!$("pop").classList.contains("hide"))setPop(false)});
+document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!$("pop").classList.contains("hide")){setPop(false);$("setbtn").focus()}});
+// ---- sender combobox ----
+let cbList=[],cbAct=0;
+const isPhone=t=>/^[+\d][\d\s\-().]{5,}$/.test(t.replace(/^[~\s\u200e]+/,""));
+const initials=t=>isPhone(t)?t.replace(/\D/g,"").slice(-2):([...t.replace(/^[~\s\u200e]+/,"")][0]||"?").toUpperCase();
+function buildCB(senders){
+  const c={};S.msgs.forEach(m=>{if(m.sender)c[m.sender]=(c[m.sender]||0)+1});
+  S.senders=senders.map(n=>({n,c:c[n],h:nd(n).toLowerCase(),d:nd(n).replace(SEP,"").toLowerCase()})).sort((a,b)=>b.c-a.c);
+  setSender("");
+}
+function setSender(v){S.from=v;$("cbl").textContent=v||"All senders";$("cbx").classList.toggle("hide",!v);$("cbw").classList.toggle("act",!!v)}
+function hlq(t,q){const o=S.q;S.q=q;const r=hl(t);S.q=o;return r}
+function renderCB(){
+  const q=nd($("cbq").value.trim()).toLowerCase(),dq=q.replace(SEP,"");
+  cbList=[{n:""}].concat(S.senders.filter(x=>!q||x.h.includes(q)||(dq&&x.d.includes(dq))));
+  let h=cbList.map((x,i)=>x.n===""&&i===0
+    ?`<li id="cbi0" role="option" data-i="0" aria-selected="${!S.from}" class="${!S.from?"sel":""}"><span class="ci">All</span><span class="cm"><span>All senders</span></span></li>`
+    :`<li id="cbi${i}" role="option" data-i="${i}" aria-selected="${S.from===x.n}" class="${S.from===x.n?"sel":""}"><span class="ci" style="background:hsl(${hue(x.n)},55%,42%)">${esc(initials(x.n))}</span><span class="cm"><span dir="auto">${hlq(x.n,q)}</span><small>${x.c.toLocaleString()} messages</small></span></li>`).join("");
+  if(q&&cbList.length===1)h+=`<li class="none" role="presentation">No sender found</li>`;
+  $("cbo").innerHTML=h;paintAct();
+}
+function paintAct(){
+  [...$("cbo").children].forEach((li,i)=>li.classList.toggle("on",i===cbAct));
+  const el=$("cbo").children[cbAct];
+  if(el&&el.id){el.scrollIntoView({block:"nearest"});$("cbq").setAttribute("aria-activedescendant",el.id)}
+}
+function openCB(){
+  $("cbp").classList.remove("hide");$("cbt").setAttribute("aria-expanded","true");
+  $("cbq").value="";cbAct=0;renderCB();
+  cbAct=Math.max(0,cbList.findIndex(x=>x.n===S.from));paintAct();$("cbq").focus();
+}
+function closeCB(focus){$("cbp").classList.add("hide");$("cbt").setAttribute("aria-expanded","false");if(focus)$("cbt").focus()}
+function pickCB(i){const x=cbList[i];if(!x)return;setSender(x.n);closeCB(true);apply()}
+$("cbt").onclick=()=>$("cbp").classList.contains("hide")?openCB():closeCB(false);
+$("cbt").onkeydown=e=>{if(e.key==="ArrowDown"&&$("cbp").classList.contains("hide")){e.preventDefault();openCB()}};
+$("cbx").onclick=()=>{setSender("");apply()};
+$("cbq").oninput=()=>{renderCB();cbAct=$("cbq").value.trim()&&cbList.length>1?1:0;paintAct()};
+$("cbq").onkeydown=e=>{
+  const k=e.key,n=cbList.length;
+  if(k==="ArrowDown"){e.preventDefault();cbAct=(cbAct+1)%n;paintAct()}
+  else if(k==="ArrowUp"){e.preventDefault();cbAct=(cbAct-1+n)%n;paintAct()}
+  else if(k==="Enter"){e.preventDefault();pickCB(cbAct)}
+  else if(k==="Escape"){e.preventDefault();closeCB(true)}
+  else if(k==="Tab")closeCB(false);
+};
+$("cbo").onclick=e=>{const li=e.target.closest("li[data-i]");if(li)pickCB(+li.dataset.i)};
+document.addEventListener("click",e=>{if(!$("cb").contains(e.target))closeCB(false)});
+$("ftg").onclick=()=>{const o=$("flt").classList.toggle("open");$("ftg").setAttribute("aria-expanded",o)};
+// ---- date range ----
+const first=()=>S.msgs[0].day,last=()=>S.msgs[S.msgs.length-1].day;
+const clamp=v=>!v?"":v<first()?first():v>last()?last():v;
+function initDates(){for(const id of["dfrom","dto"]){$(id).min=first();$(id).max=last()}}
+$("dfrom").onchange=()=>{const a=$("dfrom").value=clamp($("dfrom").value);$("dto").min=a||first();if(a&&$("dto").value&&$("dto").value<a)$("dto").value=a;apply()};
+$("dto").onchange=()=>{const z=$("dto").value=clamp($("dto").value);$("dfrom").max=z||last();if(z&&$("dfrom").value>z)$("dfrom").value=z;apply()};
+$("dx").onclick=()=>{$("dfrom").value=$("dto").value="";initDates();apply()};
+// ---- reusable searchable combobox ----
+function loadMe(senders){let v=null;try{v=localStorage.getItem("cvme:"+S.name)}catch(e){}return senders.includes(v)?v:(senders[0]||null)}
+function Combo(root,o){
+  root.classList.add("cmb");
+  root.innerHTML=`<button type="button" class="cmb-t" aria-haspopup="listbox" aria-expanded="false"><span class="cmb-l"></span><svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></button><div class="cbp hide"><label class="cbs"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg><input type="text" role="combobox" aria-expanded="true" aria-autocomplete="list" autocomplete="off" placeholder="${o.placeholder}"></label><ul role="listbox"></ul></div>`;
+  const t=root.querySelector(".cmb-t"),p=root.querySelector(".cbp"),inp=root.querySelector("input"),ul=root.querySelector("ul"),lab=root.querySelector(".cmb-l");
+  const id="cmb"+Math.random().toString(36).slice(2,7);let list=[],act=0;
+  const isOpen=()=>!p.classList.contains("hide");
+  function label(){const v=o.get();lab.innerHTML=v?`<span class="ci sm" style="background:hsl(${hue(v)},55%,42%)">${esc(initials(v))}</span><span dir="auto">${esc(v)}</span>`:(o.empty||"Select")}
+  function paint(){[...ul.children].forEach((li,i)=>li.classList.toggle("on",i===act));const el=ul.children[act];if(el&&el.id){el.scrollIntoView({block:"nearest"});inp.setAttribute("aria-activedescendant",el.id)}}
+  function render(){
+    const q=nd(inp.value.trim()).toLowerCase(),dq=q.replace(SEP,""),cur=o.get();
+    list=o.items().filter(x=>!q||x.h.includes(q)||(dq&&x.d.includes(dq)));
+    ul.innerHTML=list.map((x,i)=>`<li id="${id}${i}" role="option" data-i="${i}" aria-selected="${x.n===cur}" class="${x.n===cur?"sel":""}"><span class="ci" style="background:hsl(${hue(x.n)},55%,42%)">${esc(initials(x.n))}</span><span class="cm"><span dir="auto">${hlq(x.n,q)}</span><small>${x.c.toLocaleString()} messages</small></span></li>`).join("")||`<li class="none" role="presentation">No sender found</li>`;
+    paint();
+  }
+  function show(){p.classList.remove("hide");t.setAttribute("aria-expanded","true");inp.value="";act=0;render();act=Math.max(0,list.findIndex(x=>x.n===o.get()));paint();inp.focus()}
+  function hide(f){p.classList.add("hide");t.setAttribute("aria-expanded","false");if(f)t.focus()}
+  function pick(i){const x=list[i];if(!x)return;o.set(x.n);label();hide(true)}
+  t.onclick=()=>isOpen()?hide():show();
+  t.onkeydown=e=>{if(e.key==="ArrowDown"&&!isOpen()){e.preventDefault();show()}};
+  inp.oninput=()=>{render();act=0;paint()};
+  inp.onkeydown=e=>{const k=e.key,n=list.length;
+    if(k==="ArrowDown"&&n){e.preventDefault();act=(act+1)%n;paint()}
+    else if(k==="ArrowUp"&&n){e.preventDefault();act=(act-1+n)%n;paint()}
+    else if(k==="Enter"){e.preventDefault();pick(act)}
+    else if(k==="Escape"){e.preventDefault();e.stopPropagation();hide(true)}
+    else if(k==="Tab")hide()};
+  ul.onclick=e=>{const li=e.target.closest("li[data-i]");if(li)pick(+li.dataset.i)};
+  document.addEventListener("click",e=>{if(isOpen()&&!root.contains(e.target))hide()});
+  label();
+  return{refresh:label,close:()=>hide()};
+}
 const dz=$("chat");
 dz.ondragover=e=>{e.preventDefault();$("drop")?.classList.add("over")};
 dz.ondragleave=()=>$("drop")?.classList.remove("over");
