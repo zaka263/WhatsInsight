@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CDR Analyzer</title>
+<style>
+:root{--bg:#f3f5f4;--panel:#fff;--ink:#16211d;--mute:#5d6b65;--line:#d9e0dc;--acc:#0f6b57;--acc-ink:#fff;--soft:#e4f1ec;--bad:#b42318;
+--c-black:#1f2937;--c-grey:#8b95a1;--c-white:#e2e8f0;--c-other:#c2410c}
+@media(prefers-color-scheme:dark){:root{--bg:#0f1513;--panel:#17201d;--ink:#e6eeea;--mute:#93a39b;--line:#2b3834;--acc:#3dbb9a;--acc-ink:#07261d;--soft:#1c2b26;--bad:#f97066;--c-black:#000;--c-white:#f1f5f9}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 "Segoe UI",system-ui,-apple-system,Roboto,sans-serif}
+header,main{max-width:1280px;margin:0 auto;padding:0 20px}
+header{padding-top:28px}
+h1{font-size:1.6rem;margin:0 0 4px;letter-spacing:-.01em}
+.sub{color:var(--mute);margin:0;max-width:72ch}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:18px;margin-top:16px}
+.hidden{display:none!important}
+#drop{border:2px dashed var(--line);border-radius:10px;padding:34px 16px;text-align:center;cursor:pointer;transition:.15s}
+#drop:hover,#drop:focus-visible,#drop.over{border-color:var(--acc);background:var(--soft);outline:none}
+#drop strong{display:block;font-size:1.05rem}#drop span{color:var(--mute)}
+.bar{height:8px;background:var(--line);border-radius:4px;overflow:hidden;margin-top:12px}
+.bar i{display:block;height:100%;width:0;background:var(--acc);transition:width .15s}
+.msg{margin-top:10px;font-size:.9rem;color:var(--mute)}.msg.err{color:var(--bad)}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
+.card{border:1px solid var(--line);border-radius:8px;padding:12px 14px;background:var(--bg)}
+.card b{display:block;font-size:1.5rem;line-height:1.2}.card span{color:var(--mute);font-size:.85rem}
+.dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px;border:1px solid var(--line)}
+.bar-top{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;margin-top:18px}
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin-top:18px}
+.tab{font:inherit;font-weight:600;background:none;border:0;border-bottom:3px solid transparent;color:var(--mute);padding:8px 14px;cursor:pointer}
+.tab[aria-selected=true]{color:var(--acc);border-bottom-color:var(--acc)}
+.tab small{font-weight:400;margin-left:4px}
+input[type=search]{font:inherit;padding:8px 10px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--ink);flex:1;min-width:220px;max-width:480px}
+button{font:inherit;font-weight:600;padding:8px 14px;border-radius:6px;border:1px solid var(--acc);background:var(--acc);color:var(--acc-ink);cursor:pointer}
+button.ghost{background:transparent;color:var(--acc)}
+button.sm{padding:3px 9px;font-size:.8rem}
+:focus-visible{outline:2px solid var(--acc);outline-offset:1px}
+.tools{display:flex;gap:12px;margin:14px 0 12px;flex-wrap:wrap}
+.wrap{overflow:auto;max-height:66vh;border:1px solid var(--line);border-radius:8px}
+table{border-collapse:collapse;width:100%;font-size:.88rem}
+th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+th{position:sticky;top:0;background:var(--soft);white-space:nowrap;z-index:1}
+td.ln{min-width:230px;word-break:break-word}td.ln div{margin-bottom:6px}
+.b{display:inline-block;padding:0 8px;border-radius:999px;font-size:.76rem;font-weight:600;border:1px solid var(--line);vertical-align:1px}
+.b.tag{background:var(--soft);color:var(--acc);border-color:var(--acc)}
+.b.c-black{background:var(--c-black);color:#fff;border-color:transparent}
+.b.c-grey{background:var(--c-grey);color:#fff;border-color:transparent}
+.b.c-white{background:var(--c-white);color:#222}
+td.nw{white-space:nowrap}
+mark{background:#fde68a;color:#222;border-radius:2px}
+.note{display:flex;gap:12px;align-items:center;margin-top:10px;font-size:.88rem;color:var(--mute)}
+#toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:8px 16px;border-radius:6px;font-size:.9rem;opacity:0;pointer-events:none;transition:opacity .2s}
+#toast.on{opacity:1}
+.priv{font-size:.85rem;color:var(--mute);margin:18px 0 32px}
+</style>
+</head>
+<body>
+<header>
+  <h1>CDR Analyzer</h1>
+  <p class="sub">Upload raw call detail records (.csv, .xlsx, .xls). Each unique A-party gets a category count, its tagged contacts, and its Black, Grey and White matches in separate columns. All processing stays in this browser tab.</p>
+</header>
+<main>
+  <section class="panel" id="uploadPanel">
+    <div id="drop" tabindex="0" role="button" aria-label="Choose a CSV or Excel file">
+      <strong>Drop a CSV or Excel file here, or click to choose one</strong>
+      <span>.csv, .xlsx or .xls</span>
+    </div>
+    <input id="file" type="file" accept=".csv,.xlsx,.xls" class="hidden">
+    <div class="bar hidden" id="barWrap"><i id="bar"></i></div>
+    <div class="msg" id="status" role="status"></div>
+  </section>
+
+  <section class="hidden" id="results">
+    <div class="panel">
+      <div class="cards" id="cards"></div>
+      <div class="bar-top">
+        <span class="msg" style="margin:0" id="fileInfo"></span>
+        <span style="display:flex;gap:8px"><button class="ghost" id="resetBtn">Load another file</button><button id="exportBtn">Export to Excel (.xlsx)</button></span>
+      </div>
+      <div class="tabs" role="tablist">
+        <button class="tab" role="tab" id="tabA" aria-selected="true">Analysis <small id="cntA"></small></button>
+        <button class="tab" role="tab" id="tabR" aria-selected="false">Raw data <small id="cntR"></small></button>
+      </div>
+      <div class="tools"><input id="search" type="search" placeholder="Search A-party, B-party name or number, or a tag such as 4th Schedule"></div>
+      <div class="wrap"><table><thead id="thead"></thead><tbody id="tbody"></tbody></table></div>
+      <div class="note"><span id="rowNote"></span><button class="ghost sm hidden" id="moreBtn">Show more rows</button></div>
+    </div>
+  </section>
+  <p class="priv">Only the SheetJS and PapaParse libraries are fetched from CDNs. Your file is never uploaded.</p>
+</main>
+<div id="toast"></div>
+
+<!-- xlsx-js-style is a drop-in build of SheetJS (same API) that also writes cell styles such as wrapped text and bold headers.
+     To use stock SheetJS instead, swap this tag for https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js (exports will then lack wrap/bold styling). -->
+<script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+<script>
+(() => {
+  const $ = id => document.getElementById(id);
+  const PAGE = 300, BASE_CATS = ['Black', 'Grey', 'White'];
+  const ANALYSIS_HEAD = ['A Party Number', 'DB Matches Count', 'Tags', 'DB Matches (Black)', 'DB Matches (Grey)', 'DB Matches (White)'];
+  const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const tick = () => new Promise(r => setTimeout(r, 0));
+  const key = s => String(s ?? '').toLowerCase().replace(/[^a-z0-9]/g, '');
+  const pad = n => String(n).padStart(2, '0');
+  const cell = v => {
+    if (v === null || v === undefined) return '';
+    if (v instanceof Date) return isNaN(v) ? '' : `${v.getFullYear()}-${pad(v.getMonth()+1)}-${pad(v.getDate())} ${pad(v.getHours())}:${pad(v.getMinutes())}:${pad(v.getSeconds())}`;
+    return String(v).trim();
+  };
+  function phoneKey(v) {
+    let d = String(v).replace(/\.0+$/, '').replace(/\D/g, '');
+    if (!d) return String(v).toLowerCase();
+    if (d.startsWith('00')) d = d.slice(2);
+    if (d.startsWith('92') && d.length >= 12) d = d.slice(2);
+    return d.replace(/^0+/, '');
+  }
+  const catLabel = c => { c = String(c || '').trim().toLowerCase(); if (c === 'gray') c = 'grey'; return c ? c.charAt(0).toUpperCase() + c.slice(1) : 'Uncategorized'; };
+  const bdg = (cls, t, q) => `<span class="b ${cls}">${hl(t, q)}</span>`;
+
+  let S = null; // state: {name, rawHead, raw[], analysis[], cats{}, tab, limit, filtered, hay{}}
+
+  const setStatus = (t, err) => { $('status').textContent = t; $('status').className = 'msg' + (err ? ' err' : ''); };
+  const setBar = p => { $('barWrap').classList.toggle('hidden', p === null); if (p !== null) $('bar').style.width = p + '%'; };
+  function toast(t) { const el = $('toast'); el.textContent = t; el.classList.add('on'); clearTimeout(toast.t); toast.t = setTimeout(() => el.classList.remove('on'), 1600); }
+
+  // ---------- Upload ----------
+  const drop = $('drop'), input = $('file');
+  drop.onclick = () => input.click();
+  drop.onkeydown = e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); input.click(); } };
+  ['dragenter', 'dragover'].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.add('over'); }));
+  ['dragleave', 'drop'].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.remove('over'); }));
+  drop.addEventListener('drop', e => e.dataTransfer.files[0] && load(e.dataTransfer.files[0]));
+  input.onchange = () => { if (input.files[0]) load(input.files[0]); input.value = ''; };
+  $('resetBtn').onclick = () => { S = null; $('results').classList.add('hidden'); $('uploadPanel').classList.remove('hidden'); setBar(null); setStatus(''); };
+
+  async function load(file) {
+    if (typeof XLSX === 'undefined' || typeof Papa === 'undefined') return setStatus('A required library did not load. Check your internet connection and reload.', true);
+    if (!/\.(csv|xlsx|xls)$/i.test(file.name)) return setStatus('Choose a .csv, .xlsx or .xls file.', true);
+    $('results').classList.add('hidden');
+    setStatus('Reading ' + file.name + '…'); setBar(10); await tick();
+    try {
+      const rows = /\.csv$/i.test(file.name) ? await readCsv(file) : await readExcel(file);
+      setBar(35); await analyze(file.name, rows);
+    } catch (err) { setBar(null); setStatus(err.message, true); }
+  }
+  const readCsv = file => new Promise((res, rej) => Papa.parse(file, {
+    skipEmptyLines: 'greedy',
+    complete: r => res(r.data.map(row => row.map(cell))),
+    error: e => rej(new Error('CSV could not be parsed: ' + e.message))
+  }));
+  async function readExcel(file) {
+    const buf = await file.arrayBuffer();
+    let wb; try { wb = XLSX.read(buf, { type: 'array', cellDates: true }); } catch (e) { throw new Error('Not a valid Excel file: ' + e.message); }
+    let best = null;
+    for (const n of wb.SheetNames) { // use the first sheet that has an Aparty column
+      const rows = XLSX.utils.sheet_to_json(wb.Sheets[n], { header: 1, raw: true, defval: '' });
+      if (!rows.length) continue;
+      best = best || rows;
+      if (rows[0].some(h => ['aparty', 'anumber', 'apartynumber'].includes(key(h)))) { best = rows; break; }
+    }
+    if (!best) throw new Error('The workbook has no data.');
+    return best.map(r => r.map(cell));
+  }
+
+  // ---------- Analysis ----------
+  async function analyze(name, rows) {
+    if (rows.length < 2) throw new Error('The file has a header row but no records.');
+    const head = rows[0].map((h, i) => String(h).trim() || 'Column ' + (i + 1));
+    const find = (...a) => head.findIndex(h => a.includes(key(h)));
+    const cA = find('aparty', 'anumber', 'apartynumber'), cB = find('bparty', 'bnumber', 'bpartynumber'),
+          cN = find('personname', 'name'), cT = find('tags', 'tag'), cC = find('category', 'cat');
+    if (cA < 0) throw new Error('No Aparty column found. Columns detected: ' + head.join(', '));
+    if (cB < 0) throw new Error('No Bparty column found. Columns detected: ' + head.join(', '));
+    const raw = rows.slice(1).filter(r => r.some(c => c !== ''));
+    const groups = new Map(), cats = {}; BASE_CATS.forEach(c => cats[c] = 0);
+    let tagged = 0;
+    for (let i = 0; i < raw.length; i++) {
+      const r = raw[i], a = r[cA] || '';
+      const cat = catLabel(cC >= 0 ? r[cC] : ''), tag = cT >= 0 ? r[cT] : '';
+      cats[cat] = (cats[cat] || 0) + 1;
+      if (tag) tagged++;
+      if (a) {
+        const k = phoneKey(a);
+        let g = groups.get(k); if (!g) groups.set(k, g = { a, n: 0, cats: {}, tagged: [], Black: [], Grey: [], White: [] });
+        const p = `${cN >= 0 ? r[cN] : ''} (${r[cB] || ''})`;
+        g.n++; g.cats[cat] = (g.cats[cat] || 0) + 1;
+        if (tag) g.tagged.push({ p, tag, cat: cC >= 0 ? r[cC] : '' });
+        if (BASE_CATS.includes(cat)) g[cat].push({ p, tag });
+      }
+      if (i % 5000 === 0) { setBar(35 + Math.round(i / raw.length * 55)); await tick(); }
+    }
+    const analysis = [...groups.values()].map(g => {
+      const c = {}; BASE_CATS.forEach(k => c[k] = 0); Object.assign(c, g.cats);
+      const row = [g.a, `Total: ${g.n}, ` + Object.entries(c).map(([k, v]) => `${k}: ${v}`).join(', '),
+        g.tagged.map(t => `${t.p}, ${t.tag}, ${t.cat}`).join('\n') || '-',
+        ...BASE_CATS.map(k => g[k].map(m => m.tag ? `${m.p}, ${m.tag}` : m.p).join('\n'))];
+      row.v = g; return row;
+    });
+    S = { name, rawHead: head, raw, analysis, cats, tab: 'A', limit: PAGE, hay: {}, filtered: [] };
+    setBar(100); setTimeout(() => setBar(null), 500);
+    setStatus('');
+    $('uploadPanel').classList.add('hidden');
+    $('results').classList.remove('hidden');
+    $('fileInfo').textContent = name;
+    $('cards').innerHTML =
+      `<div class="card"><b>${raw.length.toLocaleString()}</b><span>Total raw records</span></div>` +
+      `<div class="card"><b>${analysis.length.toLocaleString()}</b><span>Unique A-parties</span></div>` +
+      `<div class="card"><b>${tagged.toLocaleString()}</b><span>Tagged records</span></div>` +
+      Object.entries(cats).filter(([k, v]) => v || BASE_CATS.includes(k)).map(([k, v]) =>
+        `<div class="card"><b>${v.toLocaleString()}</b><span><i class="dot" style="background:var(--c-${BASE_CATS.includes(k) ? k.toLowerCase() : 'other'})"></i>${esc(k)}</span></div>`).join('');
+    $('cntA').textContent = '(' + analysis.length.toLocaleString() + ')';
+    $('cntR').textContent = '(' + raw.length.toLocaleString() + ')';
+    $('search').value = ''; setTab('A');
+  }
+
+  // ---------- Tables ----------
+  function setTab(t) {
+    S.tab = t; S.limit = PAGE;
+    $('tabA').setAttribute('aria-selected', t === 'A'); $('tabR').setAttribute('aria-selected', t === 'R');
+    render();
+  }
+  $('tabA').onclick = () => setTab('A'); $('tabR').onclick = () => setTab('R');
+  let timer; $('search').oninput = () => { clearTimeout(timer); timer = setTimeout(() => { S.limit = PAGE; render(); }, 150); };
+  $('moreBtn').onclick = () => { S.limit += PAGE; render(); };
+
+  function hl(text, q) {
+    const t = esc(text); if (!q) return t;
+    return t.replace(new RegExp('(' + esc(q).replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')', 'gi'), '<mark>$1</mark>');
+  }
+  function render() {
+    if (!S) return;
+    const isA = S.tab === 'A', data = isA ? S.analysis : S.raw, q = $('search').value.trim(), nq = q.toLowerCase();
+    if (!S.hay[S.tab]) S.hay[S.tab] = data.map(r => r.join(' \u0001 ').toLowerCase());
+    const hay = S.hay[S.tab];
+    const idx = []; for (let i = 0; i < data.length; i++) if (!nq || hay[i].includes(nq)) idx.push(i);
+    S.filtered = idx;
+    const head = isA ? ANALYSIS_HEAD : S.rawHead;
+    $('thead').innerHTML = '<tr>' + head.map(h => `<th>${esc(h)}</th>`).join('') + '</tr>';
+    const shown = idx.slice(0, S.limit);
+    $('tbody').innerHTML = shown.map(i => {
+      const r = data[i];
+      if (isA) { const g = r.v; return `<tr><td class="nw">${hl(r[0], q)}</td><td class="nw">${hl(r[1], q)}</td><td class="ln">${g.tagged.length ? g.tagged.map(t => `<div>${hl(t.p, q)} ${bdg('tag', t.tag, q)} ${t.cat ? bdg('c-' + catLabel(t.cat).toLowerCase(), t.cat, q) : ''}</div>`).join('') : '-'}</td>${BASE_CATS.map(k => `<td class="ln">${g[k].map(m => `<div>${hl(m.p, q)} ${m.tag ? bdg('tag', m.tag, q) : ''}</div>`).join('')}</td>`).join('')}</tr>`; }
+      return '<tr>' + r.map(c => `<td>${c ? hl(c, q) : ''}</td>`).join('') + '</tr>';
+    }).join('') || `<tr><td colspan="${head.length}" style="color:var(--mute)">No rows match “${esc(q)}”. Try a shorter search.</td></tr>`;
+    $('rowNote').textContent = `Showing ${shown.length.toLocaleString()} of ${idx.length.toLocaleString()} rows. The export includes every row.`;
+    $('moreBtn').classList.toggle('hidden', idx.length <= shown.length);
+  }
+  // ---------- Export ----------
+  function buildSheet(head, rows, opts) {
+    const ws = XLSX.utils.aoa_to_sheet([head, ...rows]);
+    const widths = head.map((h, c) => {
+      let w = String(h).length;
+      for (let r = 0; r < Math.min(rows.length, 2000); r++) {
+        const v = String(rows[r][c] ?? '');
+        const longest = v.includes('\n') ? Math.max(...v.split('\n').map(l => l.length)) : v.length;
+        if (longest > w) w = longest;
+      }
+      return { wch: Math.min(Math.max(w + 2, 10), opts.maxW) };
+    });
+    ws['!cols'] = widths;
+    const range = XLSX.utils.decode_range(ws['!ref']);
+    for (let r = range.s.r; r <= range.e.r; r++) for (let c = range.s.c; c <= range.e.c; c++) {
+      const ref = XLSX.utils.encode_cell({ r, c }), x = ws[ref]; if (!x) continue;
+      x.s = r === 0
+        ? { font: { bold: true, color: { rgb: 'FFFFFF' } }, fill: { fgColor: { rgb: '0F6B57' } }, alignment: { vertical: 'center', wrapText: true } }
+        : { alignment: { vertical: 'top', wrapText: true } };
+    }
+    if (opts.rowHeights) ws['!rows'] = [{ hpt: 22 }, ...rows.map(r => ({ hpt: Math.min(409, 15 * Math.max(1, ...r.map(v => String(v ?? '').split('\n').length))) }))];
+    ws['!autofilter'] = { ref: ws['!ref'] };
+    return ws;
+  }
+  $('exportBtn').onclick = () => {
+    if (!S) return;
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, buildSheet(ANALYSIS_HEAD, S.analysis, { maxW: 60, rowHeights: true }), 'Analysis');
+    XLSX.utils.book_append_sheet(wb, buildSheet(S.rawHead, S.raw, { maxW: 40 }), 'Raw Data');
+    XLSX.writeFile(wb, S.name.replace(/\.[^.]+$/, '') + '_analysis.xlsx');
+    toast('Exported ' + S.name.replace(/\.[^.]+$/, '') + '_analysis.xlsx');
+  };
+})();
+</script>
+</body>
+</html>
