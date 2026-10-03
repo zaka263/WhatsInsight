@@ -3,107 +3,270 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>CDR Analyzer</title>
+<title>In-Depth CDR Analysis · Zaka ur Rahman</title>
 <style>
-:root{--bg:#f3f5f4;--panel:#fff;--ink:#16211d;--mute:#5d6b65;--line:#d9e0dc;--acc:#0f6b57;--acc-ink:#fff;--soft:#e4f1ec;--bad:#b42318;
---c-black:#1f2937;--c-grey:#8b95a1;--c-white:#e2e8f0;--c-other:#c2410c}
-@media(prefers-color-scheme:dark){:root{--bg:#0f1513;--panel:#17201d;--ink:#e6eeea;--mute:#93a39b;--line:#2b3834;--acc:#3dbb9a;--acc-ink:#07261d;--soft:#1c2b26;--bad:#f97066;--c-black:#000;--c-white:#f1f5f9}}
+:root{--bg:#eef1f0;--panel:#fff;--ink:#14201c;--mute:#62716a;--line:#dbe2de;--acc:#0f6b57;--acc2:#e6f2ed;--acc-ink:#fff;--bad:#b42318;--hd:#f1f5f3;--cb:#1f2937;--cg:#8b95a1;--cw:#e2e8f0;--line2:#94a3b8;--shd:0 14px 44px rgba(0,0,0,.28),0 2px 8px rgba(0,0,0,.12)}
+:root.dark{--bg:#0d1311;--panel:#151e1b;--ink:#e6eeea;--mute:#8fa097;--line:#27342f;--acc:#3dbb9a;--acc2:#1a2a25;--acc-ink:#06241c;--bad:#f97066;--hd:#1b2723;--cb:#000;--cw:#eef2f6;--line2:#5b6b78;--shd:0 14px 44px rgba(0,0,0,.6),0 2px 8px rgba(0,0,0,.4)}
 *{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 "Segoe UI",system-ui,-apple-system,Roboto,sans-serif}
-header,main{max-width:1280px;margin:0 auto;padding:0 20px}
-header{padding-top:28px}
-h1{font-size:1.6rem;margin:0 0 4px;letter-spacing:-.01em}
-.sub{color:var(--mute);margin:0;max-width:72ch}
-.panel{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:18px;margin-top:16px}
+html,body{height:100%;margin:0;overflow:hidden}
+body{display:flex;flex-direction:column;height:100vh;height:100dvh;background:var(--bg);color:var(--ink);font:13px/1.4 "Segoe UI",system-ui,-apple-system,Roboto,sans-serif}
 .hidden{display:none!important}
-#drop{border:2px dashed var(--line);border-radius:10px;padding:34px 16px;text-align:center;cursor:pointer;transition:.15s}
-#drop:hover,#drop:focus-visible,#drop.over{border-color:var(--acc);background:var(--soft);outline:none}
-#drop strong{display:block;font-size:1.05rem}#drop span{color:var(--mute)}
-.bar{height:8px;background:var(--line);border-radius:4px;overflow:hidden;margin-top:12px}
-.bar i{display:block;height:100%;width:0;background:var(--acc);transition:width .15s}
-.msg{margin-top:10px;font-size:.9rem;color:var(--mute)}.msg.err{color:var(--bad)}
-.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
-.card{border:1px solid var(--line);border-radius:8px;padding:12px 14px;background:var(--bg)}
-.card b{display:block;font-size:1.5rem;line-height:1.2}.card span{color:var(--mute);font-size:.85rem}
-.dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px;border:1px solid var(--line)}
-.bar-top{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;margin-top:18px}
-.tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin-top:18px}
-.tab{font:inherit;font-weight:600;background:none;border:0;border-bottom:3px solid transparent;color:var(--mute);padding:8px 14px;cursor:pointer}
-.tab[aria-selected=true]{color:var(--acc);border-bottom-color:var(--acc)}
-.tab small{font-weight:400;margin-left:4px}
-input[type=search]{font:inherit;padding:8px 10px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--ink);flex:1;min-width:220px;max-width:480px}
-button{font:inherit;font-weight:600;padding:8px 14px;border-radius:6px;border:1px solid var(--acc);background:var(--acc);color:var(--acc-ink);cursor:pointer}
-button.ghost{background:transparent;color:var(--acc)}
-button.sm{padding:3px 9px;font-size:.8rem}
+#bar{position:fixed;top:0;left:0;height:3px;width:0;background:var(--acc);z-index:50;transition:width .15s}
+body.over::after{content:"Drop file to load it";position:fixed;inset:8px;border:3px dashed var(--acc);background:color-mix(in srgb,var(--acc) 14%,transparent);display:grid;place-items:center;font-size:1.3rem;font-weight:700;color:var(--acc);z-index:40;pointer-events:none;border-radius:12px}
+#empty{flex:1;overflow:auto;display:flex;flex-direction:column;align-items:center;padding:clamp(20px,5vh,56px) 20px 20px;position:relative;isolation:isolate;
+background:radial-gradient(900px 480px at 15% -10%,color-mix(in srgb,var(--acc) 20%,transparent),transparent 60%),radial-gradient(800px 460px at 100% 0%,color-mix(in srgb,#2563eb 14%,transparent),transparent 60%),var(--bg)}
+#empty::before{content:"";position:absolute;inset:0;z-index:-1;opacity:.5;background-image:linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(90deg,var(--line) 1px,transparent 1px);background-size:44px 44px;-webkit-mask-image:radial-gradient(ellipse at 50% 20%,#000,transparent 70%);mask-image:radial-gradient(ellipse at 50% 20%,#000,transparent 70%)}
+#empty .box{width:min(720px,100%);text-align:center;margin:auto 0}
+.logo{width:68px;height:68px;margin:0 auto 18px;border-radius:20px;display:grid;place-items:center;color:#fff;background:linear-gradient(135deg,var(--acc),#2563eb);box-shadow:0 10px 30px color-mix(in srgb,var(--acc) 45%,transparent),inset 0 1px 0 #fff4}
+.logo svg{width:36px;height:36px}
+.eyebrow{display:inline-flex;align-items:center;gap:7px;padding:4px 12px;border:1px solid var(--line);background:var(--panel);border-radius:999px;color:var(--mute);font-size:12px;font-weight:600;letter-spacing:.02em}
+.eyebrow i{width:7px;height:7px;border-radius:50%;background:#22c55e;box-shadow:0 0 0 3px #22c55e33}
+#empty h1{margin:14px 0 6px;font-size:clamp(2rem,6vw,3.2rem);line-height:1.08;letter-spacing:-.03em;font-weight:800;background:linear-gradient(100deg,var(--ink) 30%,var(--acc));-webkit-background-clip:text;background-clip:text;color:transparent}
+.by{margin:0 0 14px;font-size:15px;color:var(--mute)}.by b{color:var(--ink);font-weight:700}
+.lead{margin:0 auto 26px;max-width:56ch;color:var(--mute);font-size:15px;line-height:1.55}
+#drop{position:relative;border:2px dashed color-mix(in srgb,var(--acc) 40%,var(--line));background:color-mix(in srgb,var(--panel) 88%,transparent);backdrop-filter:blur(6px);border-radius:22px;padding:38px 18px 30px;cursor:pointer;transition:.18s;box-shadow:0 12px 40px rgba(0,0,0,.08)}
+#drop:hover,#drop:focus-visible{border-color:var(--acc);background:var(--acc2);outline:none;transform:translateY(-2px);box-shadow:0 18px 50px color-mix(in srgb,var(--acc) 22%,transparent)}
+.upi{width:58px;height:58px;margin:0 auto 12px;border-radius:50%;display:grid;place-items:center;background:var(--acc2);color:var(--acc);border:1px solid color-mix(in srgb,var(--acc) 35%,transparent);transition:.18s}
+#drop:hover .upi{background:var(--acc);color:var(--acc-ink);transform:scale(1.06)}
+.upi svg{width:26px;height:26px}
+#drop strong{display:block;font-size:1.15rem;letter-spacing:-.01em}
+#drop .or{display:block;color:var(--mute);margin:3px 0 12px}
+.fmt{display:flex;gap:6px;justify-content:center;flex-wrap:wrap}
+.fmt em{font-style:normal;font-weight:700;font-size:11.5px;padding:2px 10px;border-radius:999px;background:var(--bg);border:1px solid var(--line);color:var(--mute)}
+.feats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:22px;text-align:left}
+.ft{background:color-mix(in srgb,var(--panel) 90%,transparent);border:1px solid var(--line);border-radius:14px;padding:12px 13px}
+.ft i{display:grid;place-items:center;width:30px;height:30px;border-radius:9px;background:var(--acc2);color:var(--acc);font-style:normal;font-size:15px;margin-bottom:7px}
+.ft b{display:block;font-size:13px;margin-bottom:1px}.ft span{color:var(--mute);font-size:12px;line-height:1.35;display:block}
+.cred{margin-top:24px;color:var(--mute);font-size:12px}.cred b{color:var(--ink)}
+@media(max-width:720px){.feats{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:380px){.feats{grid-template-columns:1fr}}
+.msg{margin-top:10px;color:var(--mute)}.msg.err{color:var(--bad)}
+#app{flex:1;display:flex;flex-direction:column;min-height:0}
+.top{background:var(--panel);border-bottom:1px solid var(--line);padding:6px 12px;display:flex;flex-direction:column;gap:6px}
+.r1,.r2{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.brand{font-size:14px}.sp{flex:1}
+.file{color:var(--mute);max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;border:1px solid var(--line);padding:1px 9px;border-radius:999px}
+.st{color:var(--mute);padding:1px 9px;background:var(--bg);border:1px solid var(--line);border-radius:6px;white-space:nowrap}
+.st b{color:var(--ink);font-size:14px;margin-right:4px}
+button,select,input[type=search]{font:inherit;font-size:12.5px;border-radius:6px;border:1px solid var(--line);background:var(--bg);color:var(--ink);padding:4px 10px}
+button{cursor:pointer;font-weight:600}
+button.p{background:var(--acc);border-color:var(--acc);color:var(--acc-ink)}
+button:hover{border-color:var(--acc)}
 :focus-visible{outline:2px solid var(--acc);outline-offset:1px}
-.tools{display:flex;gap:12px;margin:14px 0 12px;flex-wrap:wrap}
-.wrap{overflow:auto;max-height:66vh;border:1px solid var(--line);border-radius:8px}
-table{border-collapse:collapse;width:100%;font-size:.88rem}
-th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
-th{position:sticky;top:0;background:var(--soft);white-space:nowrap;z-index:1}
-td.ln{min-width:230px;word-break:break-word}td.ln div{margin-bottom:6px}
-.b{display:inline-block;padding:0 8px;border-radius:999px;font-size:.76rem;font-weight:600;border:1px solid var(--line);vertical-align:1px}
-.b.tag{background:var(--soft);color:var(--acc);border-color:var(--acc)}
-.b.c-black{background:var(--c-black);color:#fff;border-color:transparent}
-.b.c-grey{background:var(--c-grey);color:#fff;border-color:transparent}
-.b.c-white{background:var(--c-white);color:#222}
+input[type=search]{flex:1;min-width:180px;max-width:380px;padding:5px 10px}
+.ck{display:flex;gap:4px;align-items:center;color:var(--mute);cursor:pointer;white-space:nowrap}
+.tabs{display:flex;border:1px solid var(--line);border-radius:6px;overflow:hidden}
+.tabs button{border:0;border-radius:0;background:transparent;color:var(--mute)}
+.tabs button[aria-selected=true]{background:var(--acc);color:var(--acc-ink)}
+.cat{display:inline-flex;align-items:center;gap:5px}
+.cat[aria-pressed=true]{border-color:var(--acc);background:var(--acc2);box-shadow:0 0 0 1px var(--acc)}
+.dot{display:inline-block;width:10px;height:10px;border-radius:50%;border:1px solid var(--line)}
+.dot.c-black{background:var(--cb)}.dot.c-grey{background:var(--cg)}.dot.c-white{background:var(--cw)}
+.main{flex:1;min-height:0;display:flex;position:relative}
+.wrap{flex:1;min-width:0;min-height:0;overflow:auto;background:var(--panel)}
+.e.pr{cursor:pointer;border-radius:3px}.e.pr:hover{background:var(--acc2)}
+.pa{cursor:pointer;color:var(--acc)}.pa:hover{text-decoration:underline}
+table:not(.fx) tbody tr{cursor:pointer}
+#side{position:absolute;top:8px;right:8px;bottom:8px;width:min(400px,calc(100% - 16px));background:var(--panel);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shd);overflow:auto;z-index:20}
+#side.in{animation:slin .2s ease-out}
+@keyframes slin{from{transform:translateX(28px);opacity:0}to{transform:none;opacity:1}}
+.sh{position:sticky;top:0;z-index:1;padding:14px;display:flex;gap:10px;align-items:flex-start;background:linear-gradient(135deg,var(--acc2),var(--panel));border-bottom:1px solid var(--line);border-radius:14px 14px 0 0}
+.av{flex:none;width:44px;height:44px;border-radius:12px;display:grid;place-items:center;font-weight:700;font-size:15px;background:var(--acc);color:var(--acc-ink)}
+.av.c-black{background:var(--cb);color:#fff}.av.c-grey{background:var(--cg);color:#fff}.av.c-white{background:var(--cw);color:#222;border:1px solid var(--line2)}
+.sh h2{margin:0;font-size:16px;line-height:1.25;word-break:break-word}.sh .sub{color:var(--mute);font-size:12px;margin-top:2px}
+.sact{display:flex;gap:4px;flex:none}
+.sact button{padding:4px 11px;border-radius:999px;font-size:12px;background:var(--panel)}
+.sact [data-act=close]{width:30px;padding:0}
+.sbody{padding:14px;display:flex;flex-direction:column;gap:12px}
+.sec{background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+.sec h3{margin:0 0 6px;font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--mute);display:flex;align-items:center;gap:6px}
+dl.kv{display:grid;grid-template-columns:100px 1fr;gap:0 10px;margin:0}
+dl.kv>*{padding:5px 0;border-bottom:1px solid var(--line);margin:0}dl.kv>:nth-last-child(-n+2){border-bottom:0}
+dl.kv dt{color:var(--mute)}dl.kv dd{word-break:break-word;font-weight:600}
+.li{padding:6px 9px;border:1px solid var(--line);background:var(--panel);border-radius:8px;margin-bottom:5px;cursor:pointer;display:flex;gap:6px;align-items:center;flex-wrap:wrap;transition:.12s}
+.li:last-child{margin-bottom:0}.li:hover{border-color:var(--acc);transform:translateX(2px)}
+.tiles{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.tile{border:1px solid var(--line);border-top:4px solid var(--ink);border-radius:10px;padding:8px 4px;text-align:center;background:var(--bg)}
+.tile b{display:block;font-size:20px;line-height:1.15}.tile span{font-size:11px;color:var(--mute)}
+.tile.c-black{border-top-color:var(--cb)}.tile.c-grey{border-top-color:var(--cg)}.tile.c-white{border-top-color:var(--line2)}
+tbody tr.sel td{background:var(--acc2)}
+/* click-to-copy phone numbers */
+.ph{cursor:pointer;border-radius:3px;text-decoration:underline dotted transparent;text-underline-offset:2px}
+.ph:hover{text-decoration-color:currentColor;background:color-mix(in srgb,var(--acc) 16%,transparent)}
+.ph:hover::after{content:" \29C9";font-size:.85em;color:var(--acc);font-weight:400}
+tbody td[data-c="0"]>b{color:var(--acc)}
+/* multi A-party link badge + drawer extras */
+.b.lk{background:transparent;color:var(--ink);border:1px dashed var(--acc);white-space:nowrap}
+button.mini{padding:1px 9px;font-size:11px;border-radius:999px;background:var(--panel)}
+.tiles.t5{grid-template-columns:repeat(5,1fr);gap:6px}
+.t5 .tile{padding:8px 2px}.t5 .tile b{font-size:18px}.t5 .tile span{font-size:10px;line-height:1.2;display:block}
+.tile.tot{border-top-color:var(--acc)}
+#side .sec .tile{background:var(--panel)}
+dl.kv.lastl{margin-top:8px}
+.idl{display:flex;flex-wrap:wrap;gap:2px 14px;font-size:12.5px;font-weight:600;margin-top:3px}
+.idl small{color:var(--mute);font-weight:500;font-size:11px;margin-right:4px;text-transform:uppercase;letter-spacing:.04em}
+.note{margin-top:6px;font-size:11.5px;color:var(--mute)}
+#printHead{display:none;padding:0 0 8px;font-size:12px}#printHead b{font-size:15px}
+table{border-collapse:separate;border-spacing:0;width:100%;font-size:12px;line-height:1.35}
+table.fx{table-layout:fixed}
+th,td{padding:4px 8px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+th{position:sticky;top:0;z-index:2;background:var(--hd);white-space:nowrap;cursor:pointer;user-select:none;font-size:11.5px}
+th i{font-style:normal;color:var(--acc);margin-left:4px;font-size:9px}
+th em{font-style:normal;font-weight:500;color:var(--mute);margin-left:5px}
+tbody tr:hover td{background:var(--acc2)}
 td.nw{white-space:nowrap}
+table:not(.fx) td{white-space:nowrap;max-width:240px;overflow:hidden;text-overflow:ellipsis}
+td.ln{word-break:break-word}.e{padding:1px 0}
+.mo{color:var(--acc);cursor:pointer;font-weight:600;font-size:11px}
+tr:not(.x) .e:nth-child(n+4){display:none}
+.xall .e{display:block!important}.xall .mo,tr.x .mo{display:none}
+.n{display:inline-flex;align-items:center;justify-content:center;min-width:22px;height:22px;padding:0 6px;margin-right:4px;border-radius:999px;font-size:11px;font-weight:700;border:1.5px solid var(--line);color:var(--mute);vertical-align:middle}
+.n.t{background:transparent;color:var(--ink);border-color:var(--ink)}
+.n.c-white{border-color:var(--line2)}
+.n.c-black,.b.c-black{background:var(--cb);color:#fff;border-color:transparent}
+.n.c-grey,.b.c-grey{background:var(--cg);color:#fff;border-color:transparent}
+.n.c-white,.b.c-white{background:var(--cw);color:#222}
+.b{display:inline-block;padding:0 7px;border-radius:999px;font-size:10.5px;font-weight:600;border:1px solid var(--line)}
+.b.tag{background:var(--acc2);color:var(--acc);border-color:var(--acc)}
+.dim{color:var(--mute)}
 mark{background:#fde68a;color:#222;border-radius:2px}
-.note{display:flex;gap:12px;align-items:center;margin-top:10px;font-size:.88rem;color:var(--mute)}
-#toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:8px 16px;border-radius:6px;font-size:.9rem;opacity:0;pointer-events:none;transition:opacity .2s}
+.foot{display:flex;justify-content:space-between;gap:12px;padding:3px 12px;color:var(--mute);font-size:11.5px;border-top:1px solid var(--line);background:var(--panel)}
+#toast{position:fixed;bottom:34px;left:50%;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:6px 14px;border-radius:6px;opacity:0;pointer-events:none;transition:opacity .2s;z-index:60}
 #toast.on{opacity:1}
-.priv{font-size:.85rem;color:var(--mute);margin:18px 0 32px}
+/* ===== modern workspace theme ===== */
+body{background:radial-gradient(900px 380px at 0% -8%,color-mix(in srgb,var(--acc) 13%,transparent),transparent 65%),radial-gradient(800px 360px at 100% -8%,color-mix(in srgb,#2563eb 10%,transparent),transparent 65%),var(--bg)}
+.top{position:relative;padding:9px 14px 8px;gap:8px;border-bottom:1px solid var(--line);box-shadow:0 6px 22px rgba(0,0,0,.05)}
+.top::before{content:"";position:absolute;left:0;right:0;top:0;height:3px;background:linear-gradient(90deg,var(--acc),#2563eb,#9333ea)}
+.brand{display:flex;align-items:center;gap:9px;font-size:inherit}
+.logo-s{width:32px;height:32px;border-radius:10px;display:grid;place-items:center;color:#fff;background:linear-gradient(135deg,var(--acc),#2563eb);box-shadow:0 4px 12px color-mix(in srgb,var(--acc) 40%,transparent)}
+.logo-s svg{width:18px;height:18px}
+.bt{display:flex;flex-direction:column;line-height:1.15}.bt b{font-size:14.5px;letter-spacing:-.01em}.bt small{font-size:11px;color:var(--mute)}
+.file{background:var(--bg);font-size:12px}
+.st{display:flex;flex-direction:column;line-height:1.15;padding:3px 12px 3px 10px;border:1px solid var(--line);border-left:3px solid var(--acc);border-radius:10px;background:var(--panel);font-size:11px;box-shadow:0 1px 2px rgba(0,0,0,.04)}
+.st b{font-size:15px;margin:0;color:var(--ink)}
+#stats .st:nth-child(2){border-left-color:#2563eb}#stats .st:nth-child(3){border-left-color:#9333ea}#stats .st:nth-child(4){border-left-color:#d97706}#stats .st:nth-child(5){border-left-color:#db2777}
+button,select,input[type=search]{border-radius:9px;padding:5px 12px;transition:.14s}
+button{box-shadow:0 1px 2px rgba(0,0,0,.05)}
+button:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(0,0,0,.1)}
+button.p{background:linear-gradient(135deg,var(--acc),color-mix(in srgb,var(--acc) 65%,#2563eb));border-color:transparent;box-shadow:0 4px 14px color-mix(in srgb,var(--acc) 38%,transparent)}
+.ic{width:14px;height:14px;vertical-align:-2px;margin-right:5px}
+input[type=search]{padding-left:32px;background:var(--bg) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2.2' stroke-linecap='round'%3E%3Ccircle cx='11' cy='11' r='7'/%3E%3Cpath d='M20 20l-3.5-3.5'/%3E%3C/svg%3E") no-repeat 10px center/15px}
+input[type=search]:focus{border-color:var(--acc);box-shadow:0 0 0 3px color-mix(in srgb,var(--acc) 22%,transparent);outline:none}
+.tabs{padding:3px;gap:2px;border-radius:11px;background:var(--bg)}
+.tabs button{border-radius:8px;box-shadow:none;padding:4px 14px}.tabs button:hover{transform:none;box-shadow:none}
+.tabs button[aria-selected=true]{background:var(--acc);box-shadow:0 2px 8px color-mix(in srgb,var(--acc) 40%,transparent)}
+.cat{border-radius:999px;padding:4px 12px 4px 10px;background:var(--panel)}
+.main{padding:10px 12px 8px}
+.wrap{border:1px solid var(--line);border-radius:14px;box-shadow:0 8px 28px rgba(0,0,0,.07)}
+#side{top:20px;right:20px;bottom:20px}
+th,td{padding:7px 10px}
+th{background:color-mix(in srgb,var(--hd) 92%,var(--acc));text-transform:uppercase;letter-spacing:.05em;font-size:10.5px;color:var(--mute);border-bottom:1px solid var(--line2)}
+th:hover{color:var(--acc)}
+th em{margin-left:6px;padding:0 7px;border-radius:999px;background:var(--acc2);color:var(--acc);font-weight:700;letter-spacing:0}
+table.fx th[data-c="2"]{box-shadow:inset 0 3px 0 var(--acc)}
+table.fx th[data-c="3"]{box-shadow:inset 0 3px 0 var(--cb)}
+table.fx th[data-c="4"]{box-shadow:inset 0 3px 0 var(--cg)}
+table.fx th[data-c="5"]{box-shadow:inset 0 3px 0 var(--line2)}
+tbody tr:nth-child(even) td{background:color-mix(in srgb,var(--hd) 55%,transparent)}
+tbody tr:hover td{background:var(--acc2)}
+tbody tr.sel td{background:color-mix(in srgb,var(--acc) 18%,var(--panel));box-shadow:inset 0 -1px 0 var(--acc)}
+tbody tr.sel td:first-child{box-shadow:inset 3px 0 0 var(--acc),inset 0 -1px 0 var(--acc)}
+tbody td[data-c="0"]>b{font-size:13.5px;letter-spacing:.01em}
+.pa{display:block;width:max-content;margin-top:4px;padding:0 9px;border-radius:999px;background:var(--acc2);font-size:11px;font-weight:600;text-decoration:none!important}
+.pa:hover{background:var(--acc);color:var(--acc-ink)}
+td.ln:empty::after{content:"–";color:var(--line2)}
+.e.pr{padding:2px 5px;margin:0 -5px;border-radius:6px}
+.n{box-shadow:0 1px 2px rgba(0,0,0,.18)}
+.b.lk{background:color-mix(in srgb,var(--acc) 10%,transparent)}
+.foot{padding:5px 14px;background:var(--panel);box-shadow:0 -4px 16px rgba(0,0,0,.04)}
+@media(max-width:700px){.foot span:last-child{display:none}.file{display:none}}
+@media print{
+:root,:root.dark{--bg:#fff;--panel:#fff;--ink:#000;--mute:#444;--line:#bbb;--acc:#0f6b57;--acc2:#fff;--hd:#eee;--cb:#1f2937;--cg:#8b95a1;--cw:#e2e8f0;--line2:#94a3b8}
+@page{size:landscape;margin:10mm}
+html,body{height:auto;overflow:visible}
+body{display:block;font-size:11px;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.top,.foot,#bar,#toast,#empty,#side,.noprint{display:none!important}
+#app,.main{display:block;overflow:visible}.wrap{overflow:visible}
+th{position:static}tr{break-inside:avoid}
+.e{display:block!important}.mo{display:none!important}
+.ph{text-decoration:none!important;background:none!important}.ph::after{content:none!important}
+#printHead{display:block}
+body.print-side .wrap,body.print-side #printHead{display:none!important}
+body.print-side #side{display:block!important;position:static;width:auto;border:0;box-shadow:none;overflow:visible}
+.sh{position:static;background:none}
+.main{padding:0}.wrap{border:0;box-shadow:none;border-radius:0}
+tbody tr:nth-child(even) td{background:none}th{box-shadow:none!important;text-transform:none;letter-spacing:0}
+}
 </style>
 </head>
 <body>
-<header>
-  <h1>CDR Analyzer</h1>
-  <p class="sub">Upload raw call detail records (.csv, .xlsx, .xls). Each unique A-party gets a category count, its tagged contacts, and its Black, Grey and White matches in separate columns. All processing stays in this browser tab.</p>
-</header>
-<main>
-  <section class="panel" id="uploadPanel">
+<div id="bar"></div>
+<div id="empty">
+  <div class="box">
+    <div class="logo" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="5" cy="6" r="2.2"/><circle cx="19" cy="6" r="2.2"/><circle cx="12" cy="18" r="2.2"/><path d="M7 6.6l10-.0M6.2 8l4.7 8.2M17.8 8l-4.7 8.2"/></svg></div>
+    <span class="eyebrow"><i></i>100% offline · runs in your browser</span>
+    <h1>In-Depth CDR Analysis</h1>
+    <p class="by">by <b>Zaka ur Rahman</b></p>
+    <p class="lead">Turn raw call detail records into a clear A-party summary: matched contacts, Black / Grey / White categories, tags, linked numbers and full call and SMS activity.</p>
     <div id="drop" tabindex="0" role="button" aria-label="Choose a CSV or Excel file">
-      <strong>Drop a CSV or Excel file here, or click to choose one</strong>
-      <span>.csv, .xlsx or .xls</span>
+      <div class="upi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4M7 9l5-5 5 5"/><path d="M4 16v3a1 1 0 001 1h14a1 1 0 001-1v-3"/></svg></div>
+      <strong>Drop your CDR file here</strong>
+      <span class="or">or click to browse your computer</span>
+      <div class="fmt"><em>.CSV</em><em>.XLSX</em><em>.XLS</em></div>
     </div>
-    <input id="file" type="file" accept=".csv,.xlsx,.xls" class="hidden">
-    <div class="bar hidden" id="barWrap"><i id="bar"></i></div>
     <div class="msg" id="status" role="status"></div>
-  </section>
-
-  <section class="hidden" id="results">
-    <div class="panel">
-      <div class="cards" id="cards"></div>
-      <div class="bar-top">
-        <span class="msg" style="margin:0" id="fileInfo"></span>
-        <span style="display:flex;gap:8px"><button class="ghost" id="resetBtn">Load another file</button><button id="exportBtn">Export to Excel (.xlsx)</button></span>
-      </div>
-      <div class="tabs" role="tablist">
-        <button class="tab" role="tab" id="tabA" aria-selected="true">Analysis <small id="cntA"></small></button>
-        <button class="tab" role="tab" id="tabR" aria-selected="false">Raw data <small id="cntR"></small></button>
-      </div>
-      <div class="tools"><input id="search" type="search" placeholder="Search A-party, B-party name or number, or a tag such as 4th Schedule"></div>
-      <div class="wrap"><table><thead id="thead"></thead><tbody id="tbody"></tbody></table></div>
-      <div class="note"><span id="rowNote"></span><button class="ghost sm hidden" id="moreBtn">Show more rows</button></div>
+    <div class="feats">
+      <div class="ft"><i>🔒</i><b>Private</b><span>Nothing is uploaded. Data stays in memory.</span></div>
+      <div class="ft"><i>◐</i><b>Categorised</b><span>Black, Grey and White matches at a glance.</span></div>
+      <div class="ft"><i>👤</i><b>Profiles</b><span>Click anyone for father name, CNIC and call history.</span></div>
+      <div class="ft"><i>⬇</i><b>Export &amp; print</b><span>Formatted Excel workbook or a clean print.</span></div>
     </div>
-  </section>
-  <p class="priv">Only the SheetJS and PapaParse libraries are fetched from CDNs. Your file is never uploaded.</p>
-</main>
+    <div class="cred">In-Depth CDR Analysis · Developed by <b>Zaka ur Rahman</b></div>
+  </div>
+</div>
+<div id="app" class="hidden">
+  <div class="top">
+    <div class="r1">
+      <span class="brand"><span class="logo-s"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="5" cy="6" r="2.2"/><circle cx="19" cy="6" r="2.2"/><circle cx="12" cy="18" r="2.2"/><path d="M7 6.6h10M6.2 8l4.7 8.2M17.8 8l-4.7 8.2"/></svg></span><span class="bt"><b>In-Depth CDR Analysis</b><small>by Zaka ur Rahman</small></span></span><span class="file" id="fileName"></span>
+      <span id="stats" style="display:flex;gap:6px;flex-wrap:wrap"></span>
+      <span class="sp"></span>
+      <button id="openBtn"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7a2 2 0 012-2h4l2 2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>Open file</button>
+      <label class="ck" title="Export only rows matching the current search and filters"><input type="checkbox" id="expView"> Filtered only</label>
+      <button id="printBtn" title="Print the current table (Ctrl+P)"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9V3h12v6M6 18H4a1 1 0 01-1-1v-6a1 1 0 011-1h16a1 1 0 011 1v6a1 1 0 01-1 1h-2"/><rect x="6" y="14" width="12" height="7"/></svg>Print</button>
+      <button class="p" id="exportBtn"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v12M7 11l5 5 5-5M4 20h16"/></svg>Export Excel</button>
+      <button id="themeBtn" title="Toggle light/dark">◐</button>
+    </div>
+    <div class="r2">
+      <div class="tabs" role="tablist"><button id="tabA" role="tab" aria-selected="true"></button><button id="tabR" role="tab" aria-selected="false"></button></div>
+      <input id="search" type="search" placeholder="Search A-party, B-party, name, tag…  ( / )" aria-label="Search">
+      <span id="chips" style="display:flex;gap:6px"></span>
+      <select id="tagSel" aria-label="Filter by tag"></select>
+      <button id="expandBtn" aria-pressed="false">Expand all</button>
+      <button id="resetBtn">Reset</button>
+    </div>
+  </div>
+  <div id="printHead"></div>
+  <div class="main"><div class="wrap" id="wrap"><table id="tbl"><colgroup id="cgp"></colgroup><thead id="thead"></thead><tbody id="tbody"></tbody></table></div>
+  <aside id="side" class="hidden" aria-label="Record details"></aside></div>
+  <div class="foot"><span id="rowNote"></span><span><i class="dot c-black"></i> Black <i class="dot c-grey"></i> Grey <i class="dot c-white"></i> White bubbles = matches · Click a person or A-party for details · Click any phone number to copy · Click headers to sort · Double-click a cell to copy</span></div>
+</div>
+<input id="file" type="file" accept=".csv,.xlsx,.xls" class="hidden">
 <div id="toast"></div>
 
-<!-- xlsx-js-style is a drop-in build of SheetJS (same API) that also writes cell styles such as wrapped text and bold headers.
-     To use stock SheetJS instead, swap this tag for https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js (exports will then lack wrap/bold styling). -->
+<!-- xlsx-js-style is a drop-in build of SheetJS (same API) that also writes styles (wrapped text, bold headers).
+     For stock SheetJS use https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js (exports lose wrap/bold styling). -->
 <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
 <script>
 (() => {
   const $ = id => document.getElementById(id);
-  const PAGE = 300, BASE_CATS = ['Black', 'Grey', 'White'];
-  const ANALYSIS_HEAD = ['A Party Number', 'DB Matches Count', 'Tags', 'DB Matches (Black)', 'DB Matches (Grey)', 'DB Matches (White)'];
+  const CATS = ['Black', 'Grey', 'White'], CHUNK = 120;
+  const HEAD = ['A Party Number', 'DB Matches Count', 'Tags', 'DB Matches (Black)', 'DB Matches (Grey)', 'DB Matches (White)'];
   const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const tick = () => new Promise(r => setTimeout(r, 0));
   const key = s => String(s ?? '').toLowerCase().replace(/[^a-z0-9]/g, '');
   const pad = n => String(n).padStart(2, '0');
+  const num = n => n.toLocaleString();
   const cell = v => {
     if (v === null || v === undefined) return '';
     if (v instanceof Date) return isNaN(v) ? '' : `${v.getFullYear()}-${pad(v.getMonth()+1)}-${pad(v.getDate())} ${pad(v.getHours())}:${pad(v.getMinutes())}:${pad(v.getSeconds())}`;
@@ -117,33 +280,59 @@ mark{background:#fde68a;color:#222;border-radius:2px}
     return d.replace(/^0+/, '');
   }
   const catLabel = c => { c = String(c || '').trim().toLowerCase(); if (c === 'gray') c = 'grey'; return c ? c.charAt(0).toUpperCase() + c.slice(1) : 'Uncategorized'; };
+  const catCls = c => 'c-' + catLabel(c).toLowerCase();
   const bdg = (cls, t, q) => `<span class="b ${cls}">${hl(t, q)}</span>`;
+  let S = null;
 
-  let S = null; // state: {name, rawHead, raw[], analysis[], cats{}, tab, limit, filtered, hay{}}
+  // ---- theme ----
+  const root = document.documentElement;
+  const setTheme = d => { root.classList.toggle('dark', d); try { localStorage.setItem('cdr-theme', d ? 'dark' : 'light'); } catch {} };
+  let saved = null; try { saved = localStorage.getItem('cdr-theme'); } catch {}
+  setTheme(saved ? saved === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches);
+  $('themeBtn').onclick = () => setTheme(!root.classList.contains('dark'));
 
-  const setStatus = (t, err) => { $('status').textContent = t; $('status').className = 'msg' + (err ? ' err' : ''); };
-  const setBar = p => { $('barWrap').classList.toggle('hidden', p === null); if (p !== null) $('bar').style.width = p + '%'; };
-  function toast(t) { const el = $('toast'); el.textContent = t; el.classList.add('on'); clearTimeout(toast.t); toast.t = setTimeout(() => el.classList.remove('on'), 1600); }
+  // ---- helpers ----
+  const setBar = p => { $('bar').style.opacity = p === null ? 0 : 1; if (p !== null) $('bar').style.width = p + '%'; };
+  function toast(t) { const el = $('toast'); el.textContent = t; el.classList.add('on'); clearTimeout(toast.t); toast.t = setTimeout(() => el.classList.remove('on'), 1700); }
+  const msg = (t, err) => { $('status').textContent = t; $('status').className = 'msg' + (err ? ' err' : ''); if (err && S) toast(t); };
+  function copy(text, label) {
+    const ok = () => toast(label || 'Copied');
+    if (navigator.clipboard && window.isSecureContext) return navigator.clipboard.writeText(text).then(ok, () => legacy(text, ok));
+    legacy(text, ok);
+  }
+  function legacy(text, ok) {
+    const ta = document.createElement('textarea'); ta.value = text; ta.style.cssText = 'position:fixed;opacity:0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); ok(); } catch { toast('Copy failed'); } ta.remove();
+  }
 
-  // ---------- Upload ----------
-  const drop = $('drop'), input = $('file');
-  drop.onclick = () => input.click();
-  drop.onkeydown = e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); input.click(); } };
-  ['dragenter', 'dragover'].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.add('over'); }));
-  ['dragleave', 'drop'].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.remove('over'); }));
-  drop.addEventListener('drop', e => e.dataTransfer.files[0] && load(e.dataTransfer.files[0]));
+  // click-to-copy phone numbers / multi-A-party badge
+  const phs = (v, q) => v ? `<span class="ph" data-ph="${esc(v)}" title="Click to copy">${hl(v, q)}</span>` : '';
+  const pn = (name, b, q) => `${hl(name || '', q)} (${phs(b, q)})`;
+  const lkb = b => { const l = S && S.linked.get(phoneKey(b || '')); return l ? ` <span class="b lk" title="This B-party appears under ${l.length} different A-parties">🔗 ${l.length} A-parties</span>` : ''; };
+  document.addEventListener('click', e => {
+    const p = e.target.closest && e.target.closest('.ph'); if (!p) return;
+    e.preventDefault(); e.stopPropagation();
+    copy(p.dataset.ph, 'Copied: ' + p.dataset.ph);
+  }, true);
+
+  // ---- upload ----
+  const input = $('file');
+  $('drop').onclick = () => input.click(); $('openBtn').onclick = () => input.click();
+  $('drop').onkeydown = e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); input.click(); } };
   input.onchange = () => { if (input.files[0]) load(input.files[0]); input.value = ''; };
-  $('resetBtn').onclick = () => { S = null; $('results').classList.add('hidden'); $('uploadPanel').classList.remove('hidden'); setBar(null); setStatus(''); };
+  addEventListener('dragover', e => { e.preventDefault(); document.body.classList.add('over'); });
+  addEventListener('dragleave', e => { if (!e.relatedTarget) document.body.classList.remove('over'); });
+  addEventListener('drop', e => { e.preventDefault(); document.body.classList.remove('over'); if (e.dataTransfer.files[0]) load(e.dataTransfer.files[0]); });
 
   async function load(file) {
-    if (typeof XLSX === 'undefined' || typeof Papa === 'undefined') return setStatus('A required library did not load. Check your internet connection and reload.', true);
-    if (!/\.(csv|xlsx|xls)$/i.test(file.name)) return setStatus('Choose a .csv, .xlsx or .xls file.', true);
-    $('results').classList.add('hidden');
-    setStatus('Reading ' + file.name + '…'); setBar(10); await tick();
+    if (typeof XLSX === 'undefined' || typeof Papa === 'undefined') return msg('A required library did not load. Check your internet connection and reload.', true);
+    if (!/\.(csv|xlsx|xls)$/i.test(file.name)) return msg('Choose a .csv, .xlsx or .xls file.', true);
+    msg('Reading ' + file.name + '…'); setBar(10); await tick();
     try {
       const rows = /\.csv$/i.test(file.name) ? await readCsv(file) : await readExcel(file);
       setBar(35); await analyze(file.name, rows);
-    } catch (err) { setBar(null); setStatus(err.message, true); }
+    } catch (err) { setBar(null); msg(err.message, true); }
   }
   const readCsv = file => new Promise((res, rej) => Papa.parse(file, {
     skipEmptyLines: 'greedy',
@@ -151,10 +340,9 @@ mark{background:#fde68a;color:#222;border-radius:2px}
     error: e => rej(new Error('CSV could not be parsed: ' + e.message))
   }));
   async function readExcel(file) {
-    const buf = await file.arrayBuffer();
-    let wb; try { wb = XLSX.read(buf, { type: 'array', cellDates: true }); } catch (e) { throw new Error('Not a valid Excel file: ' + e.message); }
+    let wb; try { wb = XLSX.read(await file.arrayBuffer(), { type: 'array', cellDates: true }); } catch (e) { throw new Error('Not a valid Excel file: ' + e.message); }
     let best = null;
-    for (const n of wb.SheetNames) { // use the first sheet that has an Aparty column
+    for (const n of wb.SheetNames) {
       const rows = XLSX.utils.sheet_to_json(wb.Sheets[n], { header: 1, raw: true, defval: '' });
       if (!rows.length) continue;
       best = best || rows;
@@ -164,105 +352,343 @@ mark{background:#fde68a;color:#222;border-radius:2px}
     return best.map(r => r.map(cell));
   }
 
-  // ---------- Analysis ----------
+  // ---- analysis ----
   async function analyze(name, rows) {
     if (rows.length < 2) throw new Error('The file has a header row but no records.');
     const head = rows[0].map((h, i) => String(h).trim() || 'Column ' + (i + 1));
     const find = (...a) => head.findIndex(h => a.includes(key(h)));
     const cA = find('aparty', 'anumber', 'apartynumber'), cB = find('bparty', 'bnumber', 'bpartynumber'),
           cN = find('personname', 'name'), cT = find('tags', 'tag'), cC = find('category', 'cat');
+    // optional traffic columns (auto-detected)
+    const cTy = find('calltype', 'type', 'servicetype', 'service', 'eventtype', 'usagetype', 'callcategory'),
+          cDir = find('direction', 'calldirection', 'inout', 'calldir', 'callflow'),
+          cD = find('datetime', 'calldatetime', 'timestamp', 'starttime', 'calltime', 'dateandtime', 'callstarttime', 'date', 'calldate'),
+          cTm = cD >= 0 && ['date', 'calldate'].includes(key(head[cD])) ? find('time') : -1;
+    // summary columns already present in the file
+    const cFN = find('fathername', 'father', 'fathersname', 'sonof', 'sodo'), cCN = find('cnic', 'cnicnumber', 'cnicno', 'nic', 'idcard'),
+          cCM = find('callm', 'callmade', 'callsmade'), cCR = find('callr', 'callreceived', 'callsreceived'),
+          cSM = find('smsm', 'smsmade'), cSR = find('smsr', 'smsreceived'),
+          cTL = find('totallogs', 'totallog'), cLC = find('lastcall'), cSC = find('smscall', 'lastsms');
+    const hasSum = [cCM, cCR, cSM, cSR].some(i => i >= 0);
     if (cA < 0) throw new Error('No Aparty column found. Columns detected: ' + head.join(', '));
     if (cB < 0) throw new Error('No Bparty column found. Columns detected: ' + head.join(', '));
     const raw = rows.slice(1).filter(r => r.some(c => c !== ''));
-    const groups = new Map(), cats = {}; BASE_CATS.forEach(c => cats[c] = 0);
+    const groups = new Map(), cats = {}, tagCounts = new Map(), bFirst = new Map(), multi = new Map(); CATS.forEach(c => cats[c] = 0);
     let tagged = 0;
     for (let i = 0; i < raw.length; i++) {
       const r = raw[i], a = r[cA] || '';
       const cat = catLabel(cC >= 0 ? r[cC] : ''), tag = cT >= 0 ? r[cT] : '';
       cats[cat] = (cats[cat] || 0) + 1;
-      if (tag) tagged++;
+      if (tag) { tagged++; tagCounts.set(tag, (tagCounts.get(tag) || 0) + 1); }
       if (a) {
         const k = phoneKey(a);
-        let g = groups.get(k); if (!g) groups.set(k, g = { a, n: 0, cats: {}, tagged: [], Black: [], Grey: [], White: [] });
-        const p = `${cN >= 0 ? r[cN] : ''} (${r[cB] || ''})`;
-        g.n++; g.cats[cat] = (g.cats[cat] || 0) + 1;
-        if (tag) g.tagged.push({ p, tag, cat: cC >= 0 ? r[cC] : '' });
-        if (BASE_CATS.includes(cat)) g[cat].push({ p, tag });
+        let g = groups.get(k); if (!g) groups.set(k, g = { a, n: 0, cats: {}, tagged: [], rows: [], Black: [], Grey: [], White: [] });
+        const name = cN >= 0 ? r[cN] : '', b = r[cB] || '', p = `${name} (${b})`;
+        g.n++; g.rows.push(i); g.cats[cat] = (g.cats[cat] || 0) + 1;
+        if (tag) g.tagged.push({ p, name, b, tag, cat: cC >= 0 ? r[cC] : '', ri: i });
+        if (CATS.includes(cat)) g[cat].push({ p, name, b, tag, ri: i });
+        // index: which distinct A-parties does each B-party appear under?
+        const bk = phoneKey(b);
+        if (bk) {
+          const m = multi.get(bk);
+          if (m) { let e = m.get(k); if (!e) m.set(k, e = { k, a, n: 0 }); e.n++; }
+          else { const f = bFirst.get(bk); if (!f) bFirst.set(bk, { k, a, n: 1 }); else if (f.k === k) f.n++; else multi.set(bk, new Map([[f.k, f], [k, { k, a, n: 1 }]])); }
+        }
       }
       if (i % 5000 === 0) { setBar(35 + Math.round(i / raw.length * 55)); await tick(); }
     }
+    const linked = new Map();
+    for (const [bk, m] of multi) linked.set(bk, [...m.values()].sort((x, y) => y.n - x.n));
+    const TYPE_RX = /sms|mms|\btext\b|messag|call|voice|incom|inbound|recei|outgo|outbound|\bmo[cs]?\b|\bmt[cs]?\b/;
+    const hasType = (cTy >= 0 || cDir >= 0) && raw.slice(0, 2000).some(r => TYPE_RX.test(((cTy >= 0 ? r[cTy] : '') + ' ' + (cDir >= 0 ? r[cDir] : '')).toLowerCase()));
     const analysis = [...groups.values()].map(g => {
-      const c = {}; BASE_CATS.forEach(k => c[k] = 0); Object.assign(c, g.cats);
+      const c = {}; CATS.forEach(k => c[k] = 0); Object.assign(c, g.cats);
       const row = [g.a, `Total: ${g.n}, ` + Object.entries(c).map(([k, v]) => `${k}: ${v}`).join(', '),
         g.tagged.map(t => `${t.p}, ${t.tag}, ${t.cat}`).join('\n') || '-',
-        ...BASE_CATS.map(k => g[k].map(m => m.tag ? `${m.p}, ${m.tag}` : m.p).join('\n'))];
+        ...CATS.map(k => g[k].map(m => m.tag ? `${m.p}, ${m.tag}` : m.p).join('\n'))];
       row.v = g; return row;
     });
-    S = { name, rawHead: head, raw, analysis, cats, tab: 'A', limit: PAGE, hay: {}, filtered: [] };
-    setBar(100); setTimeout(() => setBar(null), 500);
-    setStatus('');
-    $('uploadPanel').classList.add('hidden');
-    $('results').classList.remove('hidden');
-    $('fileInfo').textContent = name;
-    $('cards').innerHTML =
-      `<div class="card"><b>${raw.length.toLocaleString()}</b><span>Total raw records</span></div>` +
-      `<div class="card"><b>${analysis.length.toLocaleString()}</b><span>Unique A-parties</span></div>` +
-      `<div class="card"><b>${tagged.toLocaleString()}</b><span>Tagged records</span></div>` +
-      Object.entries(cats).filter(([k, v]) => v || BASE_CATS.includes(k)).map(([k, v]) =>
-        `<div class="card"><b>${v.toLocaleString()}</b><span><i class="dot" style="background:var(--c-${BASE_CATS.includes(k) ? k.toLowerCase() : 'other'})"></i>${esc(k)}</span></div>`).join('');
-    $('cntA').textContent = '(' + analysis.length.toLocaleString() + ')';
-    $('cntR').textContent = '(' + raw.length.toLocaleString() + ')';
-    $('search').value = ''; setTab('A');
+    S = { name, rawHead: head, raw, analysis, cats, tagged, tagCounts, cC, cT, cA, cB, cN, cTy, cDir, cD, cTm, hasType, cFN, cCN, cCM, cCR, cSM, cSR, cTL, cLC, cSC, hasSum, linked, partyIdx: new Map(analysis.map((r, i) => [phoneKey(r[0]), i])), tab: 'A', hay: {}, view: [], shown: 0,
+          sort: { A: { c: -1, d: 1 }, R: { c: -1, d: 1 } }, cat: new Set(), tag: '', expand: false };
+    setBar(100); setTimeout(() => setBar(null), 500); msg('');
+    showApp();
   }
 
-  // ---------- Tables ----------
+  function showApp() {
+    $('empty').classList.add('hidden'); $('app').classList.remove('hidden'); $('side').classList.add('hidden');
+    $('fileName').textContent = S.name; $('fileName').title = S.name;
+    const other = S.raw.length - CATS.reduce((s, k) => s + S.cats[k], 0);
+    const st = [[S.raw.length, 'Records'], [S.analysis.length, 'A-parties'], [S.tagged, 'Tagged']];
+    if (other) st.push([other, 'Other cat.']);
+    if (S.linked.size) st.push([S.linked.size, '🔗 Multi-A B-parties']);
+    $('stats').innerHTML = st.map(([n, l]) => `<span class="st"><b>${num(n)}</b>${l}</span>`).join('');
+    $('chips').innerHTML = CATS.map(k => `<button class="cat" data-cat="${k}" aria-pressed="false" title="Show only A-parties with ${k} matches"><i class="dot c-${k.toLowerCase()}"></i>${k} <b>${num(S.cats[k])}</b></button>`).join('');
+    $('tagSel').innerHTML = '<option value="">All tags</option>' + [...S.tagCounts].sort((a, b) => b[1] - a[1])
+      .map(([t, n]) => `<option value="${esc(t)}">${esc(t)} (${num(n)})</option>`).join('');
+    $('tabA').textContent = `Analysis (${num(S.analysis.length)})`; $('tabR').textContent = `Raw data (${num(S.raw.length)})`;
+    $('search').value = ''; $('expView').checked = false; $('expandBtn').setAttribute('aria-pressed', 'false');
+    setTab('A');
+  }
+
+  // ---- filtering / sorting ----
+  const cmp = (a, b) => (typeof a === 'number' && typeof b === 'number') ? a - b : String(a).localeCompare(String(b), undefined, { numeric: true });
+  function sortKey(tab, c) {
+    if (tab === 'A') return c === 0 ? r => r[0] : c === 1 ? r => r.v.n : c === 2 ? r => r.v.tagged.length : r => r.v[CATS[c - 3]].length;
+    return r => { const v = r[c]; return /^-?\d{1,15}(\.\d+)?$/.test(v) ? +v : v; };
+  }
+  function compute(tab) {
+    const A = tab === 'A', data = A ? S.analysis : S.raw, q = $('search').value.trim().toLowerCase();
+    if (!S.hay[tab]) S.hay[tab] = data.map(r => r.join('\u0001').toLowerCase());
+    const hay = S.hay[tab], idx = [];
+    for (let i = 0; i < data.length; i++) {
+      if (q && !hay[i].includes(q)) continue;
+      const r = data[i];
+      if (S.cat.size) { if (A) { if (![...S.cat].some(c => r.v[c].length)) continue; } else if (S.cC < 0 || !S.cat.has(catLabel(r[S.cC]))) continue; }
+      if (S.tag) { if (A) { if (!r.v.tagged.some(t => t.tag === S.tag)) continue; } else if (S.cT < 0 || r[S.cT] !== S.tag) continue; }
+      idx.push(i);
+    }
+    const so = S.sort[tab];
+    if (so.c >= 0) { const f = sortKey(tab, so.c); idx.sort((a, b) => cmp(f(data[a]), f(data[b])) * so.d); }
+    return idx;
+  }
+
+  // ---- rendering ----
   function setTab(t) {
-    S.tab = t; S.limit = PAGE;
-    $('tabA').setAttribute('aria-selected', t === 'A'); $('tabR').setAttribute('aria-selected', t === 'R');
-    render();
+    S.tab = t; $('tabA').setAttribute('aria-selected', t === 'A'); $('tabR').setAttribute('aria-selected', t === 'R'); render();
   }
-  $('tabA').onclick = () => setTab('A'); $('tabR').onclick = () => setTab('R');
-  let timer; $('search').oninput = () => { clearTimeout(timer); timer = setTimeout(() => { S.limit = PAGE; render(); }, 150); };
-  $('moreBtn').onclick = () => { S.limit += PAGE; render(); };
-
   function hl(text, q) {
     const t = esc(text); if (!q) return t;
     return t.replace(new RegExp('(' + esc(q).replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')', 'gi'), '<mark>$1</mark>');
   }
   function render() {
     if (!S) return;
-    const isA = S.tab === 'A', data = isA ? S.analysis : S.raw, q = $('search').value.trim(), nq = q.toLowerCase();
-    if (!S.hay[S.tab]) S.hay[S.tab] = data.map(r => r.join(' \u0001 ').toLowerCase());
-    const hay = S.hay[S.tab];
-    const idx = []; for (let i = 0; i < data.length; i++) if (!nq || hay[i].includes(nq)) idx.push(i);
-    S.filtered = idx;
-    const head = isA ? ANALYSIS_HEAD : S.rawHead;
-    $('thead').innerHTML = '<tr>' + head.map(h => `<th>${esc(h)}</th>`).join('') + '</tr>';
-    const shown = idx.slice(0, S.limit);
-    $('tbody').innerHTML = shown.map(i => {
-      const r = data[i];
-      if (isA) { const g = r.v; return `<tr><td class="nw">${hl(r[0], q)}</td><td class="nw">${hl(r[1], q)}</td><td class="ln">${g.tagged.length ? g.tagged.map(t => `<div>${hl(t.p, q)} ${bdg('tag', t.tag, q)} ${t.cat ? bdg('c-' + catLabel(t.cat).toLowerCase(), t.cat, q) : ''}</div>`).join('') : '-'}</td>${BASE_CATS.map(k => `<td class="ln">${g[k].map(m => `<div>${hl(m.p, q)} ${m.tag ? bdg('tag', m.tag, q) : ''}</div>`).join('')}</td>`).join('')}</tr>`; }
-      return '<tr>' + r.map(c => `<td>${c ? hl(c, q) : ''}</td>`).join('') + '</tr>';
-    }).join('') || `<tr><td colspan="${head.length}" style="color:var(--mute)">No rows match “${esc(q)}”. Try a shorter search.</td></tr>`;
-    $('rowNote').textContent = `Showing ${shown.length.toLocaleString()} of ${idx.length.toLocaleString()} rows. The export includes every row.`;
-    $('moreBtn').classList.toggle('hidden', idx.length <= shown.length);
+    const A = S.tab === 'A', so = S.sort[S.tab], q = $('search').value.trim();
+    S.view = compute(S.tab); S.shown = 0;
+    const sub = i => A ? (i === 2 ? S.tagged : i >= 3 ? S.cats[CATS[i - 3]] : null) : null;
+    $('cgp').innerHTML = A ? '<col style="width:140px"><col style="width:164px"><col><col><col><col>' : '';
+    $('tbl').className = A ? 'fx' : '';
+    $('thead').innerHTML = '<tr>' + (A ? HEAD : S.rawHead).map((h, i) =>
+      `<th data-c="${i}">${esc(h)}${sub(i) !== null ? `<em>${num(sub(i))}</em>` : ''}<i>${so.c === i ? (so.d > 0 ? '▲' : '▼') : ''}</i></th>`).join('') + '</tr>';
+    $('tbody').innerHTML = ''; $('wrap').scrollTop = 0;
+    $('wrap').classList.toggle('xall', S.expand || !!q);
+    if (!S.view.length) $('tbody').innerHTML = `<tr><td colspan="${A ? 6 : S.rawHead.length}" class="dim" style="padding:16px">No rows match the current search and filters.</td></tr>`;
+    more();
   }
-  // ---------- Export ----------
+  function more() {
+    if (!S.view.length) return updateNote();
+    if (S.shown >= S.view.length) return;
+    const q = $('search').value.trim(), A = S.tab === 'A', data = A ? S.analysis : S.raw, end = Math.min(S.shown + CHUNK, S.view.length);
+    let h = ''; for (let k = S.shown; k < end; k++) { const i = S.view[k]; h += A ? rowA(data[i], i, q) : rowR(data[i], i, q); }
+    $('tbody').insertAdjacentHTML('beforeend', h); S.shown = end; updateNote();
+    const w = $('wrap'); if (w.scrollHeight <= w.clientHeight + 40) more();
+  }
+  function updateNote() {
+    const total = (S.tab === 'A' ? S.analysis : S.raw).length;
+    $('rowNote').textContent = `${num(Math.min(S.shown, S.view.length))} of ${num(S.view.length)} rows shown` + (S.view.length < total ? ` (filtered from ${num(total)})` : '');
+  }
+  function bubbles(g) {
+    const o = g.n - CATS.reduce((s, k) => s + g[k].length, 0);
+    return `<span class="n t" title="Total matches">${g.n}</span>` +
+      CATS.map(k => `<span class="n c-${k.toLowerCase()}" title="${g[k].length} ${k}">${g[k].length}</span>`).join('') +
+      (o ? `<span class="n" style="border-style:dashed" title="${o} other / uncategorized">${o}</span>` : '');
+  }
+  function rowA(r, i, q) {
+    const g = r.v;
+    const lines = (arr, f) => arr.map(f).join('') + (arr.length > 3 ? `<div class="mo">+${arr.length - 3} more</div>` : '');
+    return `<tr data-i="${i}"><td class="nw" data-c="0"><b>${phs(r[0], q)}</b><div class="pa" title="Open A-party details">Details ›</div></td>` +
+      `<td class="nw" data-c="1">${bubbles(g)}</td>` +
+      `<td class="ln" data-c="2">${g.tagged.length ? lines(g.tagged, t => `<div class="e pr" data-ri="${t.ri}">${pn(t.name, t.b, q)} ${bdg('tag', t.tag, q)} ${t.cat ? bdg(catCls(t.cat), t.cat, q) : ''}${lkb(t.b)}</div>`) : '<span class="dim">-</span>'}</td>` +
+      CATS.map((k, j) => `<td class="ln" data-c="${j + 3}">${lines(g[k], m => `<div class="e pr" data-ri="${m.ri}">${pn(m.name, m.b, q)} ${m.tag ? bdg('tag', m.tag, q) : ''}${lkb(m.b)}</div>`)}</td>`).join('') + '</tr>';
+  }
+  const rowR = (r, i, q) => `<tr data-i="${i}">` + r.map((c, j) => `<td data-c="${j}">${c ? (j === S.cA || j === S.cB ? phs(c, q) : hl(c, q)) : ''}${j === S.cB && c ? lkb(c) : ''}</td>`).join('') + '</tr>';
+
+  // ---- events ----
+  $('wrap').addEventListener('scroll', e => { const w = e.target; if (w.scrollTop + w.clientHeight >= w.scrollHeight - 300) more(); });
+  $('thead').addEventListener('click', e => {
+    const th = e.target.closest('th'); if (!th) return;
+    const c = +th.dataset.c, so = S.sort[S.tab];
+    if (so.c !== c) { so.c = c; so.d = 1; } else if (so.d > 0) so.d = -1; else so.c = -1;
+    render();
+  });
+  $('tbody').addEventListener('click', e => {
+    const m = e.target.closest('.mo'); if (m) return m.closest('tr').classList.add('x');
+    const tr = e.target.closest('tr[data-i]'); if (!tr || String(getSelection())) return;
+    const i = +tr.dataset.i, old = $('tbody').querySelector('tr.sel'); if (old) old.classList.remove('sel'); tr.classList.add('sel');
+    if (S.tab === 'R') return openContact(i);
+    const c = e.target.closest('.e[data-ri]'); if (c) return openContact(+c.dataset.ri);
+    if (e.target.closest('td[data-c="0"]')) openParty(i);
+  });
+  $('tbody').addEventListener('dblclick', e => {
+    if (e.target.closest('.ph')) return;
+    const td = e.target.closest('td[data-c]'); if (!td) return;
+    const row = (S.tab === 'A' ? S.analysis : S.raw)[+td.parentNode.dataset.i];
+    copy(row[+td.dataset.c]);
+  });
+  $('tabA').onclick = () => setTab('A'); $('tabR').onclick = () => setTab('R');
+  let timer; $('search').oninput = () => { clearTimeout(timer); timer = setTimeout(render, 120); };
+  $('chips').addEventListener('click', e => {
+    const b = e.target.closest('[data-cat]'); if (!b) return;
+    const k = b.dataset.cat; S.cat.has(k) ? S.cat.delete(k) : S.cat.add(k);
+    b.setAttribute('aria-pressed', S.cat.has(k)); render();
+  });
+  $('tagSel').onchange = e => { S.tag = e.target.value; render(); };
+  $('expandBtn').onclick = e => { S.expand = !S.expand; e.currentTarget.setAttribute('aria-pressed', S.expand); e.currentTarget.textContent = S.expand ? 'Collapse' : 'Expand all'; render(); };
+  $('resetBtn').onclick = () => {
+    $('search').value = ''; S.cat.clear(); S.tag = ''; $('tagSel').value = '';
+    document.querySelectorAll('[data-cat]').forEach(b => b.setAttribute('aria-pressed', 'false'));
+    S.sort.A.c = S.sort.R.c = -1; render();
+  };
+  addEventListener('keydown', e => {
+    if (!S) return;
+    const inField = /INPUT|SELECT|TEXTAREA/.test(document.activeElement.tagName);
+    if (e.key === '/' && !inField) { e.preventDefault(); $('search').focus(); $('search').select(); }
+    else if (e.key === 'Escape' && document.activeElement === $('search')) { $('search').value = ''; $('search').blur(); render(); }
+    else if (e.key === 'Escape') closeSide();
+  });
+
+  // ---- sidebar ----
+  const ctOf = ri => { const r = S.raw[ri]; return { name: S.cN >= 0 ? r[S.cN] : '', b: r[S.cB] || '', tag: S.cT >= 0 ? r[S.cT] : '', cat: S.cC >= 0 ? r[S.cC] : '' }; };
+  const badges = c => (c.tag ? bdg('tag', c.tag) : '') + ' ' + (c.cat ? bdg(catCls(c.cat), c.cat) : '');
+  const li = ri => { const c = ctOf(ri); return `<div class="li" data-ri="${ri}"><i class="dot ${c.cat ? catCls(c.cat) : ''}"></i><span>${esc(c.name)} (${phs(c.b)})</span> ${badges(c)}${lkb(c.b)}</div>`; };
+  const initials = n => (String(n).trim().split(/\s+/).slice(0, 2).map(w => w[0]).join('') || '#').toUpperCase();
+  function closeSide() { $('side').classList.add('hidden'); const o = $('tbody').querySelector('tr.sel'); if (o) o.classList.remove('sel'); }
+  function side(head, body, text, av) {
+    S.sideText = text; const el = $('side'), was = el.classList.contains('hidden');
+    el.innerHTML = `<div class="sh">${av || ''}<div style="flex:1;min-width:0">${head}</div><div class="sact"><button class="noprint" data-act="print" title="Print this record">Print</button><button class="noprint" data-act="copy" title="Copy details">Copy</button><button class="noprint" data-act="close" title="Close (Esc)">✕</button></div></div><div class="sbody">${body}</div>`;
+    el.classList.remove('hidden'); el.scrollTop = 0;
+    if (was) { el.classList.remove('in'); void el.offsetWidth; el.classList.add('in'); }
+  }
+  function selRow(i) {
+    if (S.tab !== 'A') return;
+    const old = $('tbody').querySelector('tr.sel'); if (old) old.classList.remove('sel');
+    const tr = $('tbody').querySelector(`tr[data-i="${i}"]`); if (tr) { tr.classList.add('sel'); tr.scrollIntoView({ block: 'nearest' }); }
+  }
+
+  // ---- traffic (optional columns: call type / direction / date-time) ----
+  const RX = { sms: /sms|mms|\btext\b|messag/, other: /\bdata\b|gprs|internet|ussd|\blte\b/, recv: /incom|inbound|recei|\bin\b|\bmt[cs]?\b/, made: /outgo|outbound|\bout\b|\bmade\b|dial|\bsent\b|\bmo[cs]?\b|originat/ };
+  function kindOf(r) {
+    if (!S.hasType) return {};
+    const s = ((S.cTy >= 0 ? r[S.cTy] : '') + ' ' + (S.cDir >= 0 ? r[S.cDir] : '')).toLowerCase();
+    return { k: RX.sms.test(s) ? 'sms' : RX.other.test(s) ? null : 'call', d: RX.recv.test(s) ? 'in' : RX.made.test(s) ? 'out' : null };
+  }
+  const tsOf = r => S.cD < 0 ? '' : (r[S.cD] + (S.cTm >= 0 && r[S.cTm] ? ' ' + r[S.cTm] : '')).trim();
+  function parseTs(s) {
+    s = String(s || '').trim(); if (!s) return NaN;
+    const m = s.match(/^(\d{1,2})[\/.-](\d{1,2})[\/.-](\d{4})(?:[ T,]+(\d{1,2}):(\d{2})(?::(\d{2}))?\s*(am|pm)?)?/i);
+    if (m) { let h = +(m[4] || 0); if (m[7]) h = h % 12 + (m[7].toLowerCase() === 'pm' ? 12 : 0); return new Date(+m[3], +m[2] - 1, +m[1], h, +(m[5] || 0), +(m[6] || 0)).getTime(); }
+    return Date.parse(s.replace(' ', 'T'));
+  }
+  function traffic(rows) {
+    const n = v => { const x = parseInt(String(v ?? '').replace(/[^\d-]/g, ''), 10); return isNaN(x) ? 0 : x; };
+    const t = { co: 0, ci: 0, so: 0, si: 0, total: rows.length, lc: '', ls: '' }, lc = { ms: -Infinity, s: '' }, ls = { ms: -Infinity, s: '' };
+    const upd = (cur, ts) => {
+      if (!ts) return; const ms = parseTs(ts);
+      if (!isNaN(ms)) { if (ms > cur.ms) { cur.ms = ms; cur.s = ts; } } else if (cur.ms === -Infinity && ts > cur.s) cur.s = ts;
+    };
+    let tl = 0;
+    for (const ri of rows) {
+      const r = S.raw[ri];
+      if (S.hasSum) {
+        if (S.cCM >= 0) t.co += n(r[S.cCM]); if (S.cCR >= 0) t.ci += n(r[S.cCR]);
+        if (S.cSM >= 0) t.so += n(r[S.cSM]); if (S.cSR >= 0) t.si += n(r[S.cSR]);
+        if (S.cTL >= 0) tl += n(r[S.cTL]);
+        if (S.cLC >= 0) upd(lc, r[S.cLC]); if (S.cSC >= 0) upd(ls, r[S.cSC]);
+        continue;
+      }
+      const { k, d } = kindOf(r);
+      if (k === 'call') { if (d === 'out') t.co++; else if (d === 'in') t.ci++; upd(lc, tsOf(r)); }
+      else if (k === 'sms') { if (d === 'out') t.so++; else if (d === 'in') t.si++; upd(ls, tsOf(r)); }
+    }
+    if (S.hasSum) t.total = S.cTL >= 0 ? tl : t.co + t.ci + t.so + t.si;
+    t.lc = lc.s; t.ls = ls.s; return t;
+  }
+  function trafficSec(t, sub) {
+    const v = n => (S.hasType || S.hasSum) ? num(n) : '–', tile = (n, l, c) => `<div class="tile${c ? ' ' + c : ''}"><b>${n}</b><span>${l}</span></div>`;
+    return `<div class="sec"><h3>Call &amp; SMS Details${sub ? ` <span style="text-transform:none;letter-spacing:0;font-weight:400">· ${sub}</span>` : ''}</h3><div class="tiles t5">` +
+      tile(v(t.co), 'Calls Made') + tile(v(t.ci), 'Calls Received') + tile(v(t.so), 'SMS Made') + tile(v(t.si), 'SMS Received') + tile(num(t.total), 'Total Logs', 'tot') + '</div>' +
+      `<dl class="kv lastl"><dt>Last Call:</dt><dd>${t.lc ? esc(t.lc) : '—'}</dd><dt>Last SMS:</dt><dd>${t.ls ? esc(t.ls) : '—'}</dd></dl>` +
+      ((S.hasType || S.hasSum) ? '' : '<div class="note">No call/SMS type column detected in this file, so only Total Logs is available.</div>') + '</div>';
+  }
+  function linkedSec(bk, curK) {
+    const l = S.linked.get(bk); if (!l) return '';
+    return `<div class="sec"><h3>🔗 Linked A-Parties (${l.length})</h3><div class="note" style="margin:0 0 6px">This B-party was contacted by ${l.length} different A-parties. Click one to open its summary.</div>` +
+      l.slice(0, 50).map(e => `<div class="li" data-pi="${S.partyIdx.get(e.k)}" data-link="1">${phs(e.a)} <span class="dim">· ${e.n} record${e.n > 1 ? 's' : ''}</span>${e.k === curK ? ' <span class="b">current</span>' : ''}<span style="flex:1"></span><button class="mini noprint" data-filt="${esc(e.a)}" title="Filter the analysis table to this A-party">Filter</button></div>`).join('') +
+      (l.length > 50 ? '<div class="dim">Showing first 50.</div>' : '') + '</div>';
+  }
+  function ensureIdx() {
+    if (S.bIdx) return;
+    S.bIdx = new Map(); S.pairIdx = new Map();
+    S.raw.forEach((x, i) => {
+      const bk = phoneKey(x[S.cB] || ''); if (!bk) return;
+      (S.bIdx.get(bk) || S.bIdx.set(bk, []).get(bk)).push(i);
+      const pk = phoneKey(x[S.cA] || '') + '|' + bk;
+      (S.pairIdx.get(pk) || S.pairIdx.set(pk, []).get(pk)).push(i);
+    });
+  }
+
+  function openContact(ri) {
+    const r = S.raw[ri], c = ctOf(ri), a = r[S.cA] || '', ak = phoneKey(a), bk = phoneKey(c.b);
+    ensureIdx();
+    const others = (S.bIdx.get(bk) || []).filter(i => i !== ri), pi = S.partyIdx.get(ak);
+    const t = traffic(S.pairIdx.get(ak + '|' + bk) || [ri]);
+    const skip = new Set([S.cA, S.cB, S.cN, S.cT, S.cC, S.cFN, S.cCN, S.cCM, S.cCR, S.cSM, S.cSR, S.cTL, S.cLC, S.cSC]);
+    const fn = S.cFN >= 0 ? r[S.cFN] : '', cn = S.cCN >= 0 ? r[S.cCN] : '';
+    const idl = (fn || cn) ? `<div class="idl">${fn ? `<span><small>Father</small>${esc(fn)}</span>` : ''}${cn ? `<span><small>CNIC</small>${phs(cn)}</span>` : ''}</div>` : '';
+    const det = [['Source row', ri + 2], ...S.rawHead.map((h, j) => [h, r[j]]).filter((_, j) => !skip.has(j))];
+    const l = S.linked.get(bk) || [];
+    const text = [`B-party: ${c.b}`, `A-party: ${a}`, c.name && `Name: ${c.name}`, fn && `Father Name: ${fn}`, cn && `CNIC: ${cn}`, c.tag && `Tag: ${c.tag}`, c.cat && `Category: ${c.cat}`,
+      (S.hasType || S.hasSum) && `Calls Made: ${t.co}\nCalls Received: ${t.ci}\nSMS Made: ${t.so}\nSMS Received: ${t.si}`, `Total Logs: ${t.total}`,
+      `Last Call: ${t.lc || '—'}`, `Last SMS: ${t.ls || '—'}`, l.length && `Linked A-parties (${l.length}): ${l.map(e => e.a).join(', ')}`,
+      ...det.map(([h, v]) => `${h}: ${v}`)].filter(Boolean).join('\n');
+    side(`<h2>${c.name ? esc(c.name) : (phs(c.b) || 'Record')}</h2>${idl}<div class="sub">B-party ${phs(c.b)}${lkb(c.b)} · row ${ri + 2}</div><div style="margin-top:6px">${badges(c)}</div>`,
+      trafficSec(t, 'this A ↔ B pair') + linkedSec(bk, ak) +
+      (pi !== undefined ? `<div class="sec"><h3>A-party</h3><div class="li" data-pi="${pi}"><b>${phs(a)}</b> ${bubbles(S.analysis[pi].v)}</div></div>` : '') +
+      (others.length ? `<div class="sec"><h3>Same B-party in other records (${others.length})</h3>${others.slice(0, 30).map(i => `<div class="li" data-ri="${i}"><b>${phs(S.raw[i][S.cA])}</b> ${badges(ctOf(i))}</div>`).join('')}${others.length > 30 ? '<div class="dim">Showing first 30.</div>' : ''}</div>` : '') +
+      `<div class="sec"><h3>More Record Details</h3><dl class="kv">${det.map(([h, v]) => `<dt>${esc(h)}</dt><dd>${v !== '' && v != null ? esc(v) : '<span class="dim">-</span>'}</dd>`).join('')}</dl></div>`,
+      text, `<div class="av ${c.cat ? catCls(c.cat) : ''}">${esc(initials(c.name || c.b))}</div>`);
+  }
+  function openParty(i) {
+    const r = S.analysis[i], g = r.v, rest = g.rows.filter(ri => !CATS.includes(catLabel(S.cC >= 0 ? S.raw[ri][S.cC] : '')));
+    const sec = (t, dot, arr) => arr.length ? `<div class="sec"><h3>${dot ? `<i class="dot ${dot}"></i>` : ''}${t} (${arr.length})</h3>${arr.map(li).join('')}</div>` : '';
+    side(`<h2>${phs(r[0])}</h2><div class="sub">A-party · ${g.n} matched contacts</div>`,
+      `<div class="tiles"><div class="tile"><b>${g.n}</b><span>Total</span></div>${CATS.map(k => `<div class="tile c-${k.toLowerCase()}"><b>${g[k].length}</b><span>${k}</span></div>`).join('')}</div>` +
+      sec('Tagged', '', g.tagged.map(t => t.ri)) + CATS.map(k => sec(k, 'c-' + k.toLowerCase(), g[k].map(m => m.ri))).join('') + sec('Other / uncategorized', '', rest),
+      HEAD.map((h, j) => `${h}:\n${r[j]}`).join('\n\n'), '<div class="av">A</div>');
+  }
+  $('side').addEventListener('click', e => {
+    const b = e.target.closest('[data-act]');
+    if (b) { const a = b.dataset.act; if (a === 'close') closeSide(); else if (a === 'copy') copy(S.sideText); else { document.body.classList.add('print-side'); print(); } return; }
+    const f = e.target.closest('[data-filt]');
+    if (f) { $('search').value = f.dataset.filt; if (S.tab !== 'A') setTab('A'); else render(); toast('Filtered: ' + f.dataset.filt); return; }
+    const c = e.target.closest('[data-ri]'); if (c) return openContact(+c.dataset.ri);
+    const p = e.target.closest('[data-pi]'); if (p) { openParty(+p.dataset.pi); if (p.dataset.link) selRow(+p.dataset.pi); }
+  });
+
+  // ---- print ----
+  $('printBtn').onclick = () => { if (S.view.length > 3000 && !confirm(`Print ${num(S.view.length)} rows? This may be slow.`)) return; print(); };
+  addEventListener('beforeprint', () => {
+    if (!S || document.body.classList.contains('print-side')) return;
+    while (S.shown < S.view.length) more();
+    const q = $('search').value.trim(), f = [q && `search “${q}”`, S.cat.size && [...S.cat].join(' / '), S.tag && `tag ${S.tag}`].filter(Boolean);
+    $('printHead').innerHTML = `<b>CDR ${S.tab === 'A' ? 'Analysis' : 'Raw data'}</b> · ${esc(S.name)} · ${new Date().toLocaleString()} · ${num(S.view.length)} rows` + (f.length ? ' · ' + esc(f.join(' · ')) : '');
+  });
+  addEventListener('afterprint', () => document.body.classList.remove('print-side'));
+
+  // ---- export ----
   function buildSheet(head, rows, opts) {
     const ws = XLSX.utils.aoa_to_sheet([head, ...rows]);
-    const widths = head.map((h, c) => {
+    ws['!cols'] = head.map((h, c) => {
       let w = String(h).length;
       for (let r = 0; r < Math.min(rows.length, 2000); r++) {
         const v = String(rows[r][c] ?? '');
-        const longest = v.includes('\n') ? Math.max(...v.split('\n').map(l => l.length)) : v.length;
-        if (longest > w) w = longest;
+        const l = v.includes('\n') ? Math.max(...v.split('\n').map(x => x.length)) : v.length;
+        if (l > w) w = l;
       }
       return { wch: Math.min(Math.max(w + 2, 10), opts.maxW) };
     });
-    ws['!cols'] = widths;
     const range = XLSX.utils.decode_range(ws['!ref']);
     for (let r = range.s.r; r <= range.e.r; r++) for (let c = range.s.c; c <= range.e.c; c++) {
-      const ref = XLSX.utils.encode_cell({ r, c }), x = ws[ref]; if (!x) continue;
+      const x = ws[XLSX.utils.encode_cell({ r, c })]; if (!x) continue;
       x.s = r === 0
         ? { font: { bold: true, color: { rgb: 'FFFFFF' } }, fill: { fgColor: { rgb: '0F6B57' } }, alignment: { vertical: 'center', wrapText: true } }
         : { alignment: { vertical: 'top', wrapText: true } };
@@ -273,11 +699,15 @@ mark{background:#fde68a;color:#222;border-radius:2px}
   }
   $('exportBtn').onclick = () => {
     if (!S) return;
+    const f = $('expView').checked;
+    const aRows = f ? compute('A').map(i => S.analysis[i]) : S.analysis;
+    const rRows = f ? compute('R').map(i => S.raw[i]) : S.raw;
+    if (!aRows.length && !rRows.length) return toast('No rows to export');
     const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, buildSheet(ANALYSIS_HEAD, S.analysis, { maxW: 60, rowHeights: true }), 'Analysis');
-    XLSX.utils.book_append_sheet(wb, buildSheet(S.rawHead, S.raw, { maxW: 40 }), 'Raw Data');
-    XLSX.writeFile(wb, S.name.replace(/\.[^.]+$/, '') + '_analysis.xlsx');
-    toast('Exported ' + S.name.replace(/\.[^.]+$/, '') + '_analysis.xlsx');
+    XLSX.utils.book_append_sheet(wb, buildSheet(HEAD, aRows, { maxW: 60, rowHeights: true }), 'Analysis');
+    XLSX.utils.book_append_sheet(wb, buildSheet(S.rawHead, rRows, { maxW: 40 }), 'Raw Data');
+    const base = S.name.replace(/\.[^.]+$/, '') + '_analysis' + (f ? '_filtered' : '') + '.xlsx';
+    XLSX.writeFile(wb, base); toast('Exported ' + base);
   };
 })();
 </script>
